@@ -1,0 +1,6 @@
+colorama==0.4.6
+jsonpath-ng==1.6.1
+ply==3.11
+python-dateutil==2.9.0.post0
+six==1.16.0
+tinydb==4.8.0
