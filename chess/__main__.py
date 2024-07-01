@@ -1,5 +1,5 @@
 """This file is the main laucher for the chess tournament application"""
-from chess.controllers.application_controller import ApplicationController
+from chess.controllers.main_controller import ApplicationController
 
 from colorama import init
 

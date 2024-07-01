@@ -1,5 +1,5 @@
 from chess.views.menu_view import MenuView
-from chess.controllers.tournaments_controller import
+from chess.controllers.tournament_controller import
 from chess.controllers.player_controller import
 
 
