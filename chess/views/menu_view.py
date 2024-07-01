@@ -9,8 +9,6 @@ class MenuView:
         print("2. Player controllers")
         print("Q. Exit the application")
         print("")
-        choice = input("Do the best choice for you!")
+        choice = input("Do the best choice for you: ")
 
         return choice
-        else:
-            print("Erreur, veuillez choisir 1 pour rentrer un nouveau utilisateur.")

@@ -1,35 +1,36 @@
-
-
-import json
 from typing import Dict, Any
-import pathlib
+from tinydb import TinyDB, Query
+import os
+
+DB_PATH_PLAYER = "_data/players.json"
 
 
 class SavePlayer:
     """
     Permet de sauvegarder le informations des joueurs
     """
-    def __init__(self, player_data: Dict[str, Any]):
-        self.player_data = player_data
 
-    def save_new_player(self):
-        """
-        Sauvegarde un nouveau joueur
-        """
-        player_file_path = pathlib.Path('data/players.json')
+    def __init__(self):
+        if not os.path.exists('_data'):
+            os.mkdir('_data')
+        self.db = TinyDB(DB_PATH_PLAYER)
+        self.table_player = self.db.table('players')
 
-        if not player_file_path.exists():
-            player_file_path.parent.mkdir(parents=True, exist_ok=True)
+    def add_new_player(self, player_data: Dict[str, Any]):
+        """Ajouter un nouveau joueur"""
 
-        try:
-            with open("players.json", "r") as file:
-                player_data_json = json.load(file)
-        except FileNotFoundError:
-            player_data_json = {}
+        self.table_player.insert({
+            "first_name": player_data["first_name"],
+            "last_name": player_data["last_name"],
+            "birth_date": player_data["birth_date"],
+            "chess_id": player_data["chess_id"]
+             })
 
-        player_id = self.player_data["chess_id"]
-        if player_id not in player_data_json:
-            player_data_json[player_id] = self.player_data
+    def get_player_list(self):
+        """Renvoie la liste des joueurs"""
+        return self.table_player.all()
 
-        with open("players.json", "w") as file:
-            json.dump(player_data_json, file, indent=4)
+    def get_player_by_id(self, chess_id):
+        """Renvoie le joueur par son id"""
+        Player = Query()
+        return self.table_player.search(Player.chess_id == chess_id)
