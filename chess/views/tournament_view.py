@@ -3,6 +3,16 @@
 
 class TournamentsView:
     """Show the information of a tournament"""
+    def __init__(self, tournament):
+        self.tournament = tournament
+
+    def display_tournament_menu(self):
+        """Display the menu of a tournament"""
+        print("\n -------Tournament menu-------")
+        print("1. Creat a new tournament")
+        print("2. creat current tournament report")
+        print("3. select and report a tournament")
+        print("4. Show the list of tournament")
 
     def display_current_tournament_data(self, tournament_data):
         """Display all the information of a tournament"""
