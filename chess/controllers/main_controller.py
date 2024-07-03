@@ -1,5 +1,5 @@
 from chess.views.menu_view import MenuView
-# from chess.controllers.tournament_controller import
+from chess.controllers.tournament_controller import TournamentControl
 from chess.controllers.player_controller import PlayerControl
 
 
@@ -9,6 +9,7 @@ class MainController:
     def __init__(self):
         self.menu_view = MenuView()
         self.player_controller = PlayerControl(self)
+        self.tournament_controller = TournamentControl()
 
     def run(self):
         """Main loop of the application"""
@@ -17,8 +18,7 @@ class MainController:
             choice = self.menu_view.application_menu()
 
             if choice == '1':
-                # self.chess_tournament.tournament()
-                print('not implemented yet')
+                self.tournament_controller.manage_tournament()
 
             elif choice == '2':
                 self.player_controller.manage_player()

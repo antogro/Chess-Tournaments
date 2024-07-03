@@ -20,7 +20,8 @@ class PlayerControl:
                         break
 
                 player_add = self.player_view.add_player(chess_id)
-                self.player_model.add_new_player(player_add)
+                player_with_docid = self.player_model.doc_id_player(player_add)
+                self.player_model.add_new_player(player_with_docid)
                 self.player_view.display_new_player(player_add)
 
             elif choice == "2":

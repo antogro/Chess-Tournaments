@@ -23,7 +23,7 @@ class PlayerView:
         print("\n--- Add a new player ---")
         first_name = input("First Name: ")
         last_name = input("Last Name: ")
-        birth_date = input("birth date : ")
+        birth_date = input("birth date (DD/MM/YYYY) : ")
         chess_ID = chess_id
 
         player_data = {
@@ -44,7 +44,7 @@ class PlayerView:
     def display_player_table(self, player_list):
         table = Table(title="Player list")
 
-        table.add_column("Doc_ID", style="black")
+        table.add_column("doc_ID", style="black")
         table.add_column("first_name", style="cyan", no_wrap=True)
         table.add_column("last_name", style="magenta")
         table.add_column("birth_date", style="green")
@@ -52,11 +52,11 @@ class PlayerView:
 
         for player in player_list:
             table.add_row(
-                str(player.get("doc_id")),
-                player.get('first_name', 'N/A'),
-                player.get('last_name', 'N/A'),
-                player.get('birth_date', 'N/A'),
-                player.get('chess_id', 'N/A')
+                str(player.get('doc_ID', 'N/A')),
+                str(player.get('first_name', 'N/A')),
+                str(player.get('last_name', 'N/A')),
+                str(player.get('birth_date', 'N/A')),
+                str(player.get('chess_id', 'N/A'))
                 )
 
         console = Console()
