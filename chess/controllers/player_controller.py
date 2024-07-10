@@ -1,12 +1,14 @@
+from chess.models.data_manager import ManageData
 from chess.views.player_view import PlayerView
-from chess.models.player_model import SavePlayer
+from chess.models.player_model import Player
+from chess.models.table_manager import TableManager
 
 
-class PlayerControl:
-    def __init__(self, main_controller):
+class MainPlayerControl:
+    def __init__(self):
         self.player_view = PlayerView()
-        self.player_model = SavePlayer()
-        self.main_controller = main_controller
+        self.player_model = Player(self, self, self, self, self, self)
+        self.player_control = PlayersControl()
 
     def manage_player(self):
 
@@ -14,23 +16,13 @@ class PlayerControl:
             choice = self.player_view.display_player_menu()
 
             if choice == "1":
-                while True:
-                    chess_id = self.player_model.chess_id_construc(self.player_view.get_chess_id())
-                    if chess_id is not None:
-                        break
-
-                player_add = self.player_view.add_player(chess_id)
-                player_with_docid = self.player_model.doc_id_player(player_add)
-                self.player_model.add_new_player(player_with_docid)
-                self.player_view.display_new_player(player_add)
+                self.player_control.add_player()
 
             elif choice == "2":
-                player_list = self.player_model.get_player_list()
-                self.player_view.display_player_table(player_list)
+                self.player_control.display_player_list()
 
             elif choice == "3":
-                player_id = self.player_view.get_chess_id()
-                player = self.player_model.get_player_by_id(player_id)
+                
 
                 if player is not None:
                     self.player_view.display_player_table(player)
@@ -42,3 +34,22 @@ class PlayerControl:
             else:
                 self.player_view.display_error_message("Do a better choice")
                 continue
+
+
+class PlayersControl:
+    def __init__(self, ):
+        self.player_model = Player(self, self, self, self, self, self)
+        self.manage_data = ManageData()
+        self.player_view = PlayerView()
+        self.table_manager = TableManager()
+
+    def add_player(self):
+        data = self.player_view.get_player_data()
+        player_data = self.player_model.doc_id_player(data)
+        self.manage_data.save_player(player_data)
+        self.player_view.display_new_player(player_data)
+
+    def display_player_list(self):
+        player_list = self.manage_data.get_player_list()
+        print(player_list)
+        self.table_manager.display_player_table(player_list)

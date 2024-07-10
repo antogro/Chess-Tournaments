@@ -1,6 +1,6 @@
 from chess.views.menu_view import MenuView
 from chess.controllers.tournament_controller import TournamentControl
-from chess.controllers.player_controller import PlayerControl
+from chess.controllers.player_controller import MainPlayerControl
 
 
 class MainController:
@@ -8,7 +8,7 @@ class MainController:
 
     def __init__(self):
         self.menu_view = MenuView()
-        self.player_controller = PlayerControl(self)
+        self.player_controller = MainPlayerControl()
         self.tournament_controller = TournamentControl()
 
     def run(self):

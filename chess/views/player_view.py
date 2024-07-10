@@ -3,7 +3,7 @@ from rich.console import Console
 
 
 class PlayerView:
-    def __init__(self, ) -> None:
+    def __init__(self) -> None:
         pass
 
     def display_player_menu(self):
@@ -15,50 +15,52 @@ class PlayerView:
 
         return menu_player
 
-    def get_chess_id(self):
-        chess_id = input("Right your chess id: ")
-        return chess_id
+    def chess_id_construc(self):
+        """construc the chess id code"""
 
-    def add_player(self, chess_id):
+        while True:
+            chess_id = input("Right your chess id: ")
+
+            if not chess_id:
+                print("N/A")
+                continue
+
+            if len(chess_id) != 7:
+                print("Invalid ID: must be 7 charactere")
+                continue
+
+            chess_id_letter = chess_id[:2]
+            chess_id_number = chess_id[2:]
+
+            if not chess_id_letter.isalpha():
+                print("Invalid ID: must start by 2 letters")
+                continue
+
+            if not chess_id_number.isdigit():
+                print("Invalid ID: must end by 5 number")
+                continue
+
+            return f"{chess_id_letter.upper()}{chess_id_number}"
+
+    def get_player_data(self):
         print("\n--- Add a new player ---")
-        first_name = input("First Name: ")
-        last_name = input("Last Name: ")
-        birth_date = input("birth date (DD/MM/YYYY) : ")
-        chess_ID = chess_id
+        self.first_name = input("First Name: ")
+        self.last_name = input("Last Name: ")
+        self.birth_date = input("birth date (DD/MM/YYYY) : ")
+        self.chess_ID = self.chess_id_construc()
+        self.rank = 0
 
         player_data = {
-            "first_name": first_name,
-            "last_name": last_name,
-            "birth_date": birth_date,
-            "chess_id": chess_ID
-            # "player point":
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "birth_date": self.birth_date,
+            "chess_id": self.chess_ID,
+            "rank": self.rank
         }
         return player_data
 
     def display_new_player(self, player_add):
-        print("New player created: " + player_add["first_name"])
+        print(f"\n ---- New player created: {player_add['first_name']} ----\n")
 
     def display_error_message(self, message):
         print("Error :" + message)
-
-    def display_player_table(self, player_list):
-        table = Table(title="Player list")
-
-        table.add_column("doc_ID", style="black")
-        table.add_column("first_name", style="cyan", no_wrap=True)
-        table.add_column("last_name", style="magenta")
-        table.add_column("birth_date", style="green")
-        table.add_column("chess_id", style="yellow")
-
-        for player in player_list:
-            table.add_row(
-                str(player.get('doc_ID', 'N/A')),
-                str(player.get('first_name', 'N/A')),
-                str(player.get('last_name', 'N/A')),
-                str(player.get('birth_date', 'N/A')),
-                str(player.get('chess_id', 'N/A'))
-                )
-
-        console = Console()
-        console.print(table)
-        print(table)
