@@ -5,13 +5,14 @@ class RoundView:
     def manage_round_view(
         self,
     ):
-        print("Round started")
+        print("Whould you want to start the round ?")
         print("Please select an option:")
-        print("1. Start a new round")
-        print("2. Stop for a moment the round")
-        print("3. End the current round")
+        print("1. Start the round")
+        print("2. Stop  the round")
+        print("3. End the tournament")
         print("4. Round report")
-        choice = input("D a choice: ")
+        print("5. Return to the main menu")
+        choice = input("Do a choice: ")
         return choice
 
     def manage_round(self, round_data):

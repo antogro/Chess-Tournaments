@@ -53,7 +53,7 @@ class TournamentPlayer:
         player_number = [int(s) for s in list_player_number.split()]
         return player_number
     
-    def choose_player(self, list_player_number, tournament_data):
+    def choose_player(self, list_player_number, ):
         """choose player for the tournament"""
         player_list = []
         Player = Query()
@@ -69,7 +69,7 @@ class TournamentPlayer:
              'rank': player.get('rank', player.get('Rank', 0))
             } for player in player_list]
 
-        return tournament_data, player_list
+        return player_list
 
 
 

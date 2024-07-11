@@ -36,3 +36,17 @@ class ManageData:
         tournament = Query()
         return self.table_tournament.search(tournament.name.search(tournament_name))
 
+    def update_tournament(self, tournament_name, update_data):
+        self.table_tournament.update(update_data, Query().name == tournament_name)
+
+    def update_player(self, tournament_name, update_data):
+        self.table_players.update(update_data, Query().name == tournament_name)
+
+    def get_player(self, player_id):
+        return self.table_players.get(Query().doc_id == player_id)
+
+    def get_tournament(self, tournament_id):
+        return self.table_tournament.get(Query().doc_id == tournament_id)
+    
+    def update_round(self, round_id, update_data):
+        self.table_round.update(update_data, Query().doc_id == round_id)

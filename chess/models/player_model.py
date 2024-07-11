@@ -36,7 +36,6 @@ class Player:
         """doc id player"""
         all_player = self.table_player.all()
         highest_doc_id = max([doc.doc_id for doc in all_player]) if all_player else 0
-        print(highest_doc_id)
         new_doc_id = highest_doc_id + 1
         player_data["doc_ID"] = new_doc_id
 

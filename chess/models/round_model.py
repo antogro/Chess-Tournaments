@@ -38,10 +38,18 @@ class RamdomPlayer:
 
         return round_data
 
+class RoundControl:
+    def __init__(self):
+        pass
+
+
+
 
 class RoundModel:
     def __init__(self, player_list):
         self.player_list = player_list
+
+    def 
 
     # def roun_data_funct(self):
     #     round_data = {

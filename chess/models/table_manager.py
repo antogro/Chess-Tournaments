@@ -43,8 +43,13 @@ class TableManager:
 
         assert isinstance(tournament_data, dict)
 
+        if not tournament_data.get("name"):
+            tournament_name = "Chess Tournament"
+        else:
+            tournament_name = tournament_data.get("name")
+
         tournament_table = Table(
-            title=f"Tournoi d'échec : {tournament_data.get('name')}!"
+            title=f"Tournoi d'échec : {tournament_name}!"
         )
         tournament_table.add_column("Attribut", style="cyan")
         tournament_table.add_column("Valeur", style="magenta")
@@ -65,17 +70,19 @@ class TableManager:
             tournament_table.add_row(display_name, str(value))
 
         console.print(tournament_table)
-
-        if "player_list" in tournament_data and tournament_data.get("name"):
+        player_table = None
+        if "player_list" in tournament_data and tournament_name:
             player_table = Table(
-                title=f"Liste des joueurs du tournoi: {tournament_data.get('name')}"
+                title=f"Liste des joueurs du tournoi: {tournament_name}"
             )
             player_table.add_column("Prénom", style="green")
             player_table.add_column("Nom", style="green")
             player_table.add_column("ID Echecs", style="yellow")
             player_table.add_column("Classement", style="red")
 
-        for player in tournament_data["player_list"]:
+        player_list = tournament_data["player_list"]
+
+        for player in player_list:
             player_table.add_row(
                 str(player["first_name"]),
                 str(player["last_name"]),
@@ -84,3 +91,17 @@ class TableManager:
             )
 
         console.print(player_table)
+
+    def display_round_table(self, round_data):
+        """Display the round table"""
+        
+    round_table = Table(
+        title=f"Tour {round_data['round_number']}"
+        )
+    round_table.add_column("Match", style="cyan")
+    round_table.add_column("Joueur 1", style="green")
+    round_table.add_column("Joueur 2", style="green")
+    round_table.add_column("Résultat", style="red")
+    round_table.add_column("Status", style="yellow")
+
+    for round in round_data:
