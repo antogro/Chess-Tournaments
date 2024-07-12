@@ -1,50 +1,52 @@
+
+
 class RoundView:
     def __init__(self) -> None:
         pass
 
-    def manage_round_view(
-        self,
-    ):
+    def manage_round_view(self):
         print("Whould you want to start the round ?")
         print("Please select an option:")
         print("1. Start the round")
         print("2. Stop  the round")
-        print("3. End the tournament")
         print("4. Round report")
         print("5. Return to the main menu")
         choice = input("Do a choice: ")
         return choice
 
-    def manage_round(self, round_data):
-        match = round_data.get("match")
-        for i in range(0, len(match), 2):
-            try:
-                player1 = match[i]
-                player2 = match[i + 1]
-                print(f"Player 1: {player1['first_name']} {player1['last_name']}")
-                print("VS")
-                print(f"Player 2: {player2['first_name']} {player2['last_name']}\n")
+    def display_pairing(self, pairings):
+        for pairing in pairings:
+            print(f"Player 1: {pairing['first_name']} {pairing['last_name']}")
+            print("VS")
+            print(f"Player 2: {pairing['first_name']} {pairing['last_name']}\n")
 
-                result = input("write the number of the result: ")
+    def get_round_choice(self):
+        print("1. If you want to start to write result")
+        print("2. if you want to paused the round.")
+        return input("\n Do you choice: ")
 
-                if result == "1":
-                    player1["rank"] += 1
-                    print(
-                        f"\n ---- Player 1: {player1['first_name']} {player1['last_name']} win ---- \n"
-                    )
-                elif result == "2":
-                    player2["rank"] += 1
-                    print(
-                        f"\n ---- Player 2: {player2['first_name']} {player2['last_name']} win ---- \n"
-                    )
-                elif result == "0":
-                    print("\n ---- Equality ---- \n")
-                    player1["rank"] += 0.5
-                    player2["rank"] += 0.5
-                else:
-                    print("Invalid result")
+    def get_match_result(self, player1, player2, current_round):
+        print(
+            f"Round{current_round}: Player 1: {player1['first_name']} {player1['last_name']}"
+        )
+        print("VS")
+        print(
+            f"Round{current_round}: Player 2: {player2['first_name']} {player2['last_name']}"
+        )
+        while True:
+            result = input(
+                "write the number of the result (Player1 win = 1, player2 win = 2, draw = 0): "
+            )
+            if result in ["0", "1", "2"]:
+                return result
+            else:
+                print("Invalid input, must be 0, 1 or 2. please try again!")
 
-            except IndexError:
-                print("No match find, or incomplet value")
-        print(match)
-        return result
+    def display_match_result(self, winner_name, is_draw=False):
+        if is_draw:
+            print("Round is draw")
+        else:
+            f"\n ---- {winner_name} win ---- \n"
+
+    def display_round_paused(self):
+        print("Round is paused, please select an option:")

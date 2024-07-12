@@ -1,12 +1,47 @@
 import random as rd
+from datetime import datetime
 
 
-class RamdomPlayer:
+class RoundModels:
     def __init__(self):
-
         pass
 
-    # def round_set(self, tournament_data):
+    def creat_match_data(self, player1, player2, start_time=None, end_time=None):
+        if start_time is None:
+            start_time = datetime.now().isoformat()
+
+        return {
+            "player1": {"doc_id": player1["doc_id"], "score": player1["score"]},
+            "player2": {"doc_id": player2["doc_id"], "score": player2["score"]},
+            "start_time": start_time,
+            "end_time": end_time,
+        }
+
+    def have_played_before(self, player1, player2, tournament_data):
+        if "matches" not in tournament_data:
+            return False
+        for match in tournament_data["matches"]:
+            if (
+                match["player1"]["doc_id"] == player1["doc_id"]
+                and match["player2"]["doc_id"] == match["player2"]["doc_id"]
+            ) or (
+                match["player1"]["doc_id"] == player2["doc_id"]
+                and match["player2"]["doc_id"] == player1["doc_id"]
+            ):
+                return True
+        return False
+
+    def creat_pairing_first_round(self, player_list):
+        pairings = []
+        for i in range(0, len(player_list), 2):
+            try:
+                player1 = player_list[i]
+                player2 = player_list[i + 1]
+                pairing = self.creat_match_data(player1, player2)
+                pairings.append(pairing)
+            except IndexError:
+                print("No enought player, one player don't have oppoent")
+        return pairings
 
     def mixed_player(self, tournament_data):
         if isinstance(tournament_data, list):
@@ -19,51 +54,47 @@ class RamdomPlayer:
         assert isinstance(player_list, list)
 
         rd.shuffle(player_list)
-        round_data = {"match": player_list}
+        tournament_data = {"player_list": player_list}
 
-        return round_data
+        return tournament_data
 
-    def get_versus_player(self, player_list):
-        round_data = {}
-        player_round = []
+    # def get_versus_player(self, tournament_data):
+    #     player_round = []
 
-        for i in range(0, len(player_list), 2):
-            if i + 1 < len(player_list):
+    #     for i in range(0, len(player_list), 2):
+    #         if i + 1 < len(player_list):
 
-                player_round.append([player_list[i], player_list[i + 1]])
-            else:
-                player_round.append([player_list[i], None])
+    #             player_round.append([player_list[i], player_list[i + 1]])
+    #         else:
+    #             player_round.append([player_list[i], None])
 
-        round_data = {"match": player_round}
+    #     tournament_data = {"match": player_round}
 
-        return round_data
-
-class RoundControl:
-    def __init__(self):
-        pass
+    #     return round_data
 
 
+# class RoundControl:
+#     def __init__(self):
+#         pass
 
 
-class RoundModel:
-    def __init__(self, player_list):
-        self.player_list = player_list
+# class RoundModel:
+#     def __init__(self, player_list):
+#         self.player_list = player_list
 
-    def 
+#     # def roun_data_funct(self):
+#     #     round_data = {
+#     #         "round_number": ,
+#         "status": "in_progess",
+#         "match":
+#     }
 
-    # def roun_data_funct(self):
-    #     round_data = {
-    #         "round_number": ,
-    #         "status": "in_progess",
-    #         "match":
-    #     }
+# def start_round(self, player_list):
+#     for player in player_list:
 
-    # def start_round(self, player_list):
-    #     for player in player_list:
+# # def get_stronger_versus_stronger(self, player_round):
+# #     stronger_player = []
+# #     player_rank = player_round.get("rank")
 
-    # # def get_stronger_versus_stronger(self, player_round):
-    # #     stronger_player = []
-    # #     player_rank = player_round.get("rank")
-
-    # #     for i in range(0, len(player_round)):
-    # #         for i > player_rank :
+# #     for i in range(0, len(player_round)):
+# #         for i > player_rank :

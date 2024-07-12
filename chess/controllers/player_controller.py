@@ -6,8 +6,8 @@ from chess.models.table_manager import TableManager
 
 class MainPlayerControl:
     def __init__(self):
-        self.player_view = PlayerView()
-        self.player_model = Player(self, self, self, self, self, self)
+        self.player_view = PlayerView(self, self, self, self, self)
+        self.player_model = Player(self, self, self, self, self)
         self.player_control = PlayersControl()
 
     def manage_player(self):
@@ -22,12 +22,7 @@ class MainPlayerControl:
                 self.player_control.display_player_list()
 
             elif choice == "3":
-                
-
-                if player is not None:
-                    self.player_view.display_player_table(player)
-                else:
-                    self.player_view.display_error_message(f" No player found with the chess ID : {player_id}")
+                pass
             elif choice == "4":
                 break
 
@@ -37,16 +32,18 @@ class MainPlayerControl:
 
 
 class PlayersControl:
-    def __init__(self, ):
-        self.player_model = Player(self, self, self, self, self, self)
+    def __init__(self):
         self.manage_data = ManageData()
-        self.player_view = PlayerView()
+        self.player_view = PlayerView(self, self, self, self, self)
         self.table_manager = TableManager()
+        self.player_model = Player(self, self, self, self, self)
 
     def add_player(self):
         data = self.player_view.get_player_data()
         player_data = self.player_model.doc_id_player(data)
-        self.manage_data.save_player(player_data)
+        self.player_model = Player(**player_data)
+        print("player data data debug: ", player_data)
+        self.player_model.save_player()
         self.player_view.display_new_player(player_data)
 
     def display_player_list(self):

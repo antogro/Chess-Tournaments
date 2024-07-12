@@ -51,13 +51,12 @@ class TournamentsView:
         tournament_data = {
             "name": tournament_name,
             "place": tournament_place,
-            "start date": start_date,
-            "Total of round": number_of_round,
+            "start_date": start_date,
+            "number_of_round": number_of_round,
             "description": tournament_description,
-            "current round": [],
+            "current_round": 1,
             "match": [],
-            "status": [],
-            "round id": []
+            "status": "in_progress"
         }
 
         return tournament_data
@@ -66,20 +65,20 @@ class TournamentsView:
         """Create a round for the tournament"""
         number_of_round = input("Rigth your desire number of round (default:4): ")
         if number_of_round == "":
-            return 4
+            return "4"
         else:
             try:
                 return int(number_of_round)
             except ValueError:
                 print("Incorrect input, Using default value of 4 round")
-                return 4
+                return "4"
 
     def tournament_choose_player(self):
         """fonction to choose a player for a tournament"""
 
-        print("\n ---- choose player by a list----")
+        print("\n ---- choose player by a list----\n")
 
-        choice = input("Do your choice (right number separate by a space): ")
+        choice = input("Do your choice (right number separate by a space): \n")
 
         return choice
 

@@ -1,10 +1,14 @@
-from rich.table import Table
-from rich.console import Console
 
 
 class PlayerView:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, last_name, first_name, birth_date, chess_id, doc_id, score=0):
+
+        self.last_name = last_name
+        self.first_name = first_name
+        self.birth_date = birth_date
+        self.chess_id = chess_id
+        self.score = score
+        self.doc_id = doc_id
 
     def display_player_menu(self):
         print("1. Create a new player")
@@ -42,20 +46,23 @@ class PlayerView:
 
             return f"{chess_id_letter.upper()}{chess_id_number}"
 
+    def display_number_to_player(self, player):
+        print(f"Name:{player.first_name} {player.last_name} -- score -> {player.score}")
+
     def get_player_data(self):
         print("\n--- Add a new player ---")
         self.first_name = input("First Name: ")
         self.last_name = input("Last Name: ")
         self.birth_date = input("birth date (DD/MM/YYYY) : ")
-        self.chess_ID = self.chess_id_construc()
-        self.rank = 0
+        self.chess_id = self.chess_id_construc()
+        self.score = 0
 
         player_data = {
             "first_name": self.first_name,
             "last_name": self.last_name,
             "birth_date": self.birth_date,
-            "chess_id": self.chess_ID,
-            "rank": self.rank
+            "chess_id": self.chess_id,
+            "score": self.score,
         }
         return player_data
 

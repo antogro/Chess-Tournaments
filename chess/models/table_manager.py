@@ -11,21 +11,21 @@ class TableManager:
     def display_player_table(self, player_list):
         table = Table(title="Player list")
 
-        table.add_column("doc_ID", style="black")
+        table.add_column("doc_id", style="black")
         table.add_column("first_name", style="cyan", no_wrap=True)
         table.add_column("last_name", style="magenta")
         table.add_column("birth_date", style="green")
         table.add_column("chess_id", style="yellow")
-        table.add_column("rank", style="red")
+        table.add_column("score", style="red")
 
         for player in player_list:
             table.add_row(
-                str(player.get("doc_ID", "N/A")),
+                str(player.get("doc_id", "N/A")),
                 player.get("first_name", "N/A"),
                 player.get("last_name", "N/A"),
                 player.get("birth_date", "N/A"),
                 player.get("chess_id", "N/A"),
-                str(player.get("rank", "N/A")),
+                str(player.get("score", "N/A")),
             )
 
         console = Console()
@@ -58,11 +58,11 @@ class TableManager:
         for key, display_name in [
             ("name", "Nom"),
             ("place", "Lieu"),
-            ("start date", "Date de début"),
+            ("start_date", "Date de début"),
             ("end date", "Date de fin"),
-            ("number of round", "Nombre de tours"),
+            ("number_of_round", "Nombre de tours"),
             ("description", "Description"),
-            ("current round", "Tour actuel"),
+            ("current_round", "Tour actuel"),
             ("match", "Match"),
             ("status", "Status"),
         ]:
@@ -70,10 +70,13 @@ class TableManager:
             tournament_table.add_row(display_name, str(value))
 
         console.print(tournament_table)
+        
+    def display_player_list_table(self, tournament_data):  
+        console = Console()  
         player_table = None
-        if "player_list" in tournament_data and tournament_name:
+        if "player_list" in tournament_data:
             player_table = Table(
-                title=f"Liste des joueurs du tournoi: {tournament_name}"
+                title="Liste des joueurs du tournoi"
             )
             player_table.add_column("Prénom", style="green")
             player_table.add_column("Nom", style="green")
@@ -87,21 +90,22 @@ class TableManager:
                 str(player["first_name"]),
                 str(player["last_name"]),
                 str(player["chess_id"]),
-                str(player.get("rank", "N/A")),
+                str(player.get("score", "N/A")),
             )
 
         console.print(player_table)
 
-    def display_round_table(self, round_data):
-        """Display the round table"""
-        
-    round_table = Table(
-        title=f"Tour {round_data['round_number']}"
-        )
-    round_table.add_column("Match", style="cyan")
-    round_table.add_column("Joueur 1", style="green")
-    round_table.add_column("Joueur 2", style="green")
-    round_table.add_column("Résultat", style="red")
-    round_table.add_column("Status", style="yellow")
+    # def display_round_table(self, data):
+    #     """Display the round table"""
+    #     match = tournament_data["match"]
+      
+    # round_table = Table(
+    #     title=f"Tour {round_data['round_number']}"
+    #     )
+    # round_table.add_column("Match", style="cyan")
+    # round_table.add_column("Joueur 1", style="green")
+    # round_table.add_column("Joueur 2", style="green")
+    # round_table.add_column("Résultat", style="red")
+    # round_table.add_column("Status", style="yellow")
 
-    for round in round_data:
+    # for round in round_data:
