@@ -1,5 +1,4 @@
-from traceback import print_tb
-from tinydb import TinyDB, Query
+from tinydb import TinyDB
 from chess.models.data_manager import ManageData
 import os
 

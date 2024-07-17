@@ -5,9 +5,9 @@ from chess.views.tournament_view import TournamentsView
 from chess.models.tournament_model import TournamentModel, TournamentPlayer
 from chess.views.player_view import PlayerView
 from chess.models.player_model import Player
-from chess.models.round_model import RamdomPlayer
-from chess.views.round_view import RoundView
-from chess.models.player_model import Player
+from chess.models.round_model import RoundModels
+# from chess.views.round_view import RoundView
+# from chess.models.player_model import Player
 
 
 class TournamentControl:
@@ -27,11 +27,12 @@ class TournamentControl:
                 self.control_tournament.creat_tournament()
 
             elif choice == "2":
-                """select and continue tournament"""
+                """Continue the last tournament"""
+                self.control_tournament.continue_last_tournament()
 
             elif choice == "3":
                 """select and start round"""
-
+                break
             elif choice == "4":
                 """show list of tournament"""
                 self.control_tournament.display_tournament()
@@ -54,10 +55,11 @@ class ControlTournament:
         self.player_model = Player(self, self, self, self, self)
         self.data_manager = ManageData()
         self.table_manager = TableManager()
-        self.round_model = RamdomPlayer()
+        self.round_model = RoundModels()
         self.player_view = PlayerView(self, self, self, self, self)
         self.round_control = RoundControl(self, self, self)
         self.round_tournament = RoundTournament()
+        self.tournament_model = TournamentModel(self, self, self, self, self)
 
         # self.tournament_model = Tournament()
         pass
@@ -65,7 +67,7 @@ class ControlTournament:
     def creat_tournament(self):
         """creat tournament"""
         tournament_data = self.tournament_view.get_tournament_data()
-
+        tournament_data = self.tournament_model.doc_id_tournament(tournament_data)
         self.tournament_model = TournamentModel(**tournament_data)
 
         table_player_list = self.data_manager.get_player_list()
@@ -74,19 +76,11 @@ class ControlTournament:
         choice = self.tournament_view.tournament_choose_player()
         player_list = self.tournament_model_player.parsed_player_number(choice)
 
-        list_player = self.tournament_model_player.choose_player(player_list)
-
-        for player_data in list_player:
-            player_data = Player(
-                first_name=player_data["first_name"],
-                last_name=player_data["last_name"],
-                doc_id=player_data["doc_id"],
-                score=player_data["score"],
-                birth_date=player_data["birth_date"],
-                chess_id=player_data["chess_id"],
-            )
-            self.player_view.display_number_to_player(player_data)
         tournament_data["player_list"] = player_list
+
+        player_data = self.tournament_model_player.extract_player_list(tournament_data)
+
+        self.player_view.display_number_to_player(player_data)
 
         tournament_id = self.tournament_model.save_tournament()
 
@@ -99,4 +93,17 @@ class ControlTournament:
         for tournament in tournament_data:
             self.table_manager.display_tournament_table(tournament)
 
+    def continue_last_tournament(self):
+        tournament_id = self.tournament_model.get_last_tournament_id()
+        print('tournament_id: ', tournament_id)
+        tournament_data = self.tournament_model.resume_tournament(tournament_id)
+        self.tournament_model.tournament_to_dict
+
+        self.tournament_model = TournamentModel(**tournament_data)
+        extracted_data = self.data_manager.extract_match_data(tournament_data)
+        data = self.tournament_model_player.link_player_name(tournament_data, extracted_data)
+        print('data: ', data)
+        self.table_manager.display_round_table(data)
+
+        self.table_manager.display_tournament_table(tournament_data)
     # def current_tournament_data(self):

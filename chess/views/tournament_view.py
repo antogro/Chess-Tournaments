@@ -11,10 +11,11 @@ class TournamentsView:
         """Display the menu of a tournament"""
         print("\n -------Tournament menu-------")
         print("1. Creat a new tournament")
-        print("2. creat current tournament report")
-        print("3. select and report a tournament")
-        print("4. Show the list of tournament")
-        print("5. Back to main menu")
+        print("2. Continue the last tournament")
+        print("3. creat current tournament report")
+        print("4. select and report a tournament")
+        print("5. Show the list of tournament")
+        print("6. Back to main menu")
         print("Q. Exit")
         print("-------------------------------")
 
@@ -38,7 +39,7 @@ class TournamentsView:
                 "Right the date of the tournament dd/mm/yyyy: "
             )
             if not tournament_start_date:
-                start_date = datetime.now().isoformat()
+                start_date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
                 break
             try:
                 start_date = datetime.strptime(tournament_start_date, "%d/%m/%Y")
@@ -55,7 +56,7 @@ class TournamentsView:
             "number_of_round": number_of_round,
             "description": tournament_description,
             "current_round": 1,
-            "match": [],
+            "match": {},
             "status": "in_progress"
         }
 
@@ -91,3 +92,4 @@ class TournamentsView:
         choice = input("Do your choice: ")
 
         return choice
+

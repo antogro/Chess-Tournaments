@@ -1,8 +1,10 @@
-from chess.models.tournament_model import TournamentPlayer
+from datetime import datetime
+from chess.models.tournament_model import TournamentModel, TournamentPlayer
 from chess.views.round_view import RoundView
 from chess.models.table_manager import TableManager
 from chess.models.data_manager import ManageData
 from chess.models.round_model import RoundModels
+from chess.views.player_view import PlayerView
 
 
 class RoundControl:
@@ -22,72 +24,86 @@ class RoundControl:
         while True:
             choice = self.round_view.manage_round_view()
             if choice == "1":
-                self.round_tournament.first_round_tournament(
-                    tournament_data, tournement_id
-                )
+                self.round_tournament.manage_round(tournament_data, tournement_id)
                 continue
             elif choice == "2":
+                break
+
+            elif choice == "3":
                 break
 
 
 class RoundTournament:
     def __init__(self):
         self.table_manager = TableManager()
+
         self.data_manager = ManageData()
         self.round_model = RoundModels()
         self.round_view = RoundView()
-        self.tournament_model = TournamentPlayer()
+        self.player_view = PlayerView(self, self, self, self, self)
+        self.tournament_model_player = TournamentPlayer()
 
-    def first_round_tournament(self, tournament_data, tournement_id):
-        print("tournement_id: ", tournement_id)
-
+    def manage_round(self, tournament_data, tournament_id):
         self.table_manager.display_tournament_table(tournament_data)
         tournament_data = self.round_model.mixed_player(tournament_data)
-        list_player_number = tournament_data["player_list"]
+        player_data = self.tournament_model_player.extract_player_list(tournament_data)
 
-        player_list = self.tournament_model.choose_player(list_player_number)
+        if tournament_data["current_round"] == 1:
+            pairings = self.round_model.creat_pairing_first_round(
+                player_data, tournament_data
+            )
+        else:
+            pairings = self.round_model.creat_pairing_next_round(tournament_data)
 
-        matches = self.round_view.manage_round(player_list)
+        self.round_model.display_pairing_round(tournament_data, pairings)
 
-        for match in matches:
-            for player in player_list:
-                if player["doc_id"] == match["player1"]["doc_id"]:
-                    player["score"] = match["player1"]["score"]
-                elif player["doc_id"] == match["player2"]["doc_id"]:
-                    player["score"] = match["player2"]["score"]
+        choice = self.round_view.get_round_choice()
 
-        tournament_update = {"player_list": player_list, "match": {"match1": matches}}
+        if choice == "1":
+            update_pairings = self.manage_score(pairings, tournament_data)
+            tournament_data = self.round_model.update_tournament_data(
+                tournament_data, update_pairings
+            )
+            self.tournament_model = TournamentModel(**tournament_data)
+            tournament_data["current_round"] += 1
+            self.tournament_model.update_tournament()
+            self.round_model.extract_and_display_round(tournament_data)
 
-        self.data_manager.update_tournament(tournement_id, tournament_update)
+        else:
+            self.round_view.display_round_paused()
+            tournament_data = self.round_model.update_tournament_data(
+                tournament_data, pairings
+            )
+            self.tournament_model = TournamentModel(**tournament_data)
+            self.tournament_model.paused_tournament(tournament_id)
 
-    # def second_round_tournament(self, round_id, tournement_data )
+        if self.tournament_model.current_round >= int(
+            tournament_data["number_of_round"]
+        ):
+            print("match finish")
 
-    # def manage_round(self, player_list):
+    def manage_score(self, pairings, tournament_data):
+        for pairing in pairings:
+            player1 = pairing["player1"]
+            player2 = pairing["player2"]
 
-    #     if choice == "1":
-    #         for i in range(0, len(match), 2):
+            result = self.round_view.get_match_result(player1, player2, tournament_data)
+            player1["score"] = float(player1.get("score", 0))
+            player2["score"] = float(player2.get("score", 0))
 
-    #             while True:
+            if result == "1":
+                player1["score"] += 1
+                self.round_view.display_match_result(player1["first_name"])
+            elif result == "2":
+                player2["score"] += 1
+                self.round_view.display_match_result(player2["first_name"])
+            elif result == "0":
+                self.round_view.display_match_result(None, is_draw=True)
+                player1["score"] += 0.5
+                player2["score"] += 0.5
+            player1["score"] = str(player1["score"])
+            player2["score"] = str(player2["score"])
 
-    #             if result == "1":
-    #                 player1["score"] += 1
-    #                 print(
-    #                 )
-    #             elif result == "2":
-    #                 player2["score"] += 1
-    #                 print(
-    #                     f"\n ---- Player 2: {player2['first_name']} {player2['last_name']} win ---- \n"
-    #                 )
-    #             elif result == "0":
-    #                 print("\n ---- Equality ---- \n")
-    #                 player1["score"] += 0.5
-    #                 player2["score"] += 0.5
-    #             else:
-    #                 print("Invalid result")
+            pairing["end_time"] = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
-    #             match["end_time"] = datetime.now().isoformat()
-
-    #     else:
-    #         print("Paused")
-
-    #     return matches
+        return pairings

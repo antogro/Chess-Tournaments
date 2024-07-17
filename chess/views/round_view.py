@@ -1,5 +1,3 @@
-
-
 class RoundView:
     def __init__(self) -> None:
         pass
@@ -14,24 +12,30 @@ class RoundView:
         choice = input("Do a choice: ")
         return choice
 
-    def display_pairing(self, pairings):
-        for pairing in pairings:
-            print(f"Player 1: {pairing['first_name']} {pairing['last_name']}")
-            print("VS")
-            print(f"Player 2: {pairing['first_name']} {pairing['last_name']}\n")
-
     def get_round_choice(self):
         print("1. If you want to start to write result")
         print("2. if you want to paused the round.")
-        return input("\n Do you choice: ")
+        return input("\n Do your choice: ")
 
-    def get_match_result(self, player1, player2, current_round):
+    def display_pairing(self, pairings):
+        for pairing in pairings:
+
+            player1 = pairing["player1"]
+            player2 = pairing["player2"]
+            print(f"\n -- Player 1: {player1['first_name']} {player1['last_name']} -- ")
+            print("VS")
+            print(
+                f"\n -- Player 2: {player2['first_name']} {player2['last_name']} -- \n"
+            )
+
+    def get_match_result(self, player1, player2, tournament_data):
+
         print(
-            f"Round{current_round}: Player 1: {player1['first_name']} {player1['last_name']}"
+            f"\n -- Round{tournament_data['current_round']}: Player 1: {player1['first_name']} {player1['last_name']} -- "
         )
         print("VS")
         print(
-            f"Round{current_round}: Player 2: {player2['first_name']} {player2['last_name']}"
+            f" -- Round{tournament_data['current_round']}: Player 2: {player2['first_name']} {player2['last_name']} -- \n"
         )
         while True:
             result = input(
@@ -40,7 +44,7 @@ class RoundView:
             if result in ["0", "1", "2"]:
                 return result
             else:
-                print("Invalid input, must be 0, 1 or 2. please try again!")
+                print("\n Invalid input, must be 0, 1 or 2. please try again! \n")
 
     def display_match_result(self, winner_name, is_draw=False):
         if is_draw:

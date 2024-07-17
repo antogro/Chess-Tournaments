@@ -1,4 +1,4 @@
-from tinydb import TinyDB, Query
+from tinydb import TinyDB, Query, where
 
 DB_PATH_PLAYER = "_data/players.json"
 DB_PATH_TOURNAMENT = "_data/tournament.json"
@@ -32,9 +32,11 @@ class ManageData:
         """Renvoie la liste des joueurs"""
         return self.table_tournament.all()
 
-    def load_tournament_data(self, tournament_name):
-        tournament = Query()
-        return self.table_tournament.search(tournament.name.search(tournament_name))
+    def load_tournament_data(self, tournament_id):
+        result = self.table_tournament.search(where("doc_id") == tournament_id)
+        if result is None:
+            raise ValueError(f"No tournament find with the id {tournament_id}")
+        return result
 
     def update_tournament(self, tournament_id, update_data):
         self.table_tournament.update(update_data, Query().doc_id == tournament_id)
@@ -46,7 +48,40 @@ class ManageData:
         return self.table_players.get(Query().doc_id == player_id)
 
     def get_tournament(self, tournament_id):
-        return self.table_tournament.get(Query().doc_id == tournament_id)
+        return self.table_tournament.search(Query().doc_id == tournament_id)
 
     def update_round(self, round_id, update_data):
         self.table_round.update(update_data, Query().doc_id == round_id)
+
+    def extract_match_data(self, tournament_data):
+        current_round = tournament_data.get("current_round", 1)
+        if current_round > 1:
+            round_key = f"round {current_round-1}"
+        else:
+            round_key = f"round {current_round}"
+
+        if "match" not in tournament_data or round_key not in tournament_data["match"]:
+            print(f"Aucune donnée de match trouvée pour {round_key}")
+            return []
+
+        extracted_data = []
+        for round_key, matches in tournament_data["match"].items():
+            for i, match in enumerate(matches):
+                extracted_data.append(
+                    {
+                        "match": i + 1,
+                        "round": f"round {current_round}",
+                        "player1": {
+                            "score": match["player1"]["score"],
+                            "doc_id": match["player1"]["doc_id"],
+                        },
+                        "player2": {
+                            "score": match["player2"]["score"],
+                            "doc_id": match["player2"]["doc_id"],
+                        },
+                        "start_date": match["start_time"],
+                        "end_date": match["end_time"],
+                    }
+                )
+
+        return extracted_data

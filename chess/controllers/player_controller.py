@@ -21,9 +21,7 @@ class MainPlayerControl:
             elif choice == "2":
                 self.player_control.display_player_list()
 
-            elif choice == "3":
-                pass
-            elif choice == "4":
+            elif choice == "Q" or choice == "q":
                 break
 
             else:
@@ -42,11 +40,9 @@ class PlayersControl:
         data = self.player_view.get_player_data()
         player_data = self.player_model.doc_id_player(data)
         self.player_model = Player(**player_data)
-        print("player data data debug: ", player_data)
         self.player_model.save_player()
         self.player_view.display_new_player(player_data)
 
     def display_player_list(self):
         player_list = self.manage_data.get_player_list()
-        print(player_list)
         self.table_manager.display_player_table(player_list)

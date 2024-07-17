@@ -13,8 +13,7 @@ class PlayerView:
     def display_player_menu(self):
         print("1. Create a new player")
         print("2. Players list")
-        print("3. Show user by chess ID")
-        print("4. Exit")
+        print("Q. Exit")
         menu_player = input("Right your choose number: ")
 
         return menu_player
@@ -47,7 +46,8 @@ class PlayerView:
             return f"{chess_id_letter.upper()}{chess_id_number}"
 
     def display_number_to_player(self, player):
-        print(f"Name:{player.first_name} {player.last_name} -- score -> {player.score}")
+        for players in player:
+            print(f"Name:{players.first_name} {players.last_name} -- score -> {players.score}")
 
     def get_player_data(self):
         print("\n--- Add a new player ---")

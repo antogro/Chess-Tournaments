@@ -1,11 +1,13 @@
 from rich.table import Table
 from rich.console import Console
+from chess.models.tournament_model import TournamentPlayer
 
 
 class TableManager:
     def __init__(
         self,
     ):
+        self.tournament_model = TournamentPlayer()
         pass
 
     def display_player_table(self, player_list):
@@ -48,18 +50,17 @@ class TableManager:
         else:
             tournament_name = tournament_data.get("name")
 
-        tournament_table = Table(
-            title=f"Tournoi d'échec : {tournament_name}!"
-        )
+        tournament_table = Table(title=f"Tournoi d'échec : {tournament_name}!")
         tournament_table.add_column("Attribut", style="cyan")
         tournament_table.add_column("Valeur", style="magenta")
 
         # Ajouter les lignes au tableau en vérifiant l'existence des clés
         for key, display_name in [
+            ("doc_id", "ID du Tournoi"),
             ("name", "Nom"),
             ("place", "Lieu"),
             ("start_date", "Date de début"),
-            ("end date", "Date de fin"),
+            ("end_date", "Date de fin"),
             ("number_of_round", "Nombre de tours"),
             ("description", "Description"),
             ("current_round", "Tour actuel"),
@@ -70,14 +71,12 @@ class TableManager:
             tournament_table.add_row(display_name, str(value))
 
         console.print(tournament_table)
-        
-    def display_player_list_table(self, tournament_data):  
-        console = Console()  
+
+    def display_player_list_table(self, tournament_data):
+        console = Console()
         player_table = None
         if "player_list" in tournament_data:
-            player_table = Table(
-                title="Liste des joueurs du tournoi"
-            )
+            player_table = Table(title="Liste des joueurs du tournoi")
             player_table.add_column("Prénom", style="green")
             player_table.add_column("Nom", style="green")
             player_table.add_column("ID Echecs", style="yellow")
@@ -95,17 +94,56 @@ class TableManager:
 
         console.print(player_table)
 
-    # def display_round_table(self, data):
-    #     """Display the round table"""
-    #     match = tournament_data["match"]
-      
-    # round_table = Table(
-    #     title=f"Tour {round_data['round_number']}"
-    #     )
-    # round_table.add_column("Match", style="cyan")
-    # round_table.add_column("Joueur 1", style="green")
-    # round_table.add_column("Joueur 2", style="green")
-    # round_table.add_column("Résultat", style="red")
-    # round_table.add_column("Status", style="yellow")
+    def display_round_table(self, linked_match_data):
+        """Display the round table using data from link_player_names"""
+        console = Console()
 
-    # for round in round_data:
+        # Assurez-vous que tous les champs sont des chaînes de caractères
+        for match in linked_match_data:
+            match["round"] = str(match.get("round", ""))
+            match["match"] = str(match.get("match", ""))
+            match["player1"]["name"] = str(match["player1"].get("name", ""))
+            match["player1"]["score"] = str(match["player1"].get("score", ""))
+            match["player2"]["name"] = str(match["player2"].get("name", ""))
+            match["player2"]["score"] = str(match["player2"].get("score", ""))
+            match["start_date"] = str(match.get("start_date", ""))
+            match["end_date"] = str(match.get("end_date", ""))
+
+        rounds = set(match["round"] for match in linked_match_data if "round" in match)
+
+        for round_key in sorted(rounds):
+            round_matches = [
+                match for match in linked_match_data if match["round"] == round_key
+            ]
+            round_table = Table(title=f"Résultats des matchs - {round_key}")
+            round_table.add_column("Round", style="cyan")
+            round_table.add_column("Match", style="cyan")
+            round_table.add_column("Joueur 1", style="green")
+            round_table.add_column("Score J1", style="green")
+            round_table.add_column("Joueur 2", style="purple")
+            round_table.add_column("Score J2", style="purple")
+            round_table.add_column("Date début", style="yellow")
+            round_table.add_column("Date fin", style="yellow")
+
+            for match in round_matches:
+                # Impression pour le débogage
+                player1_name = (
+                    match["player1"]["name"] if match["player1"]["name"] else "N/A"
+                )
+                player2_name = (
+                    match["player2"]["name"] if match["player2"]["name"] else "N/A"
+                )
+
+                round_table.add_row(
+                    match["round"],
+                    match["match"],
+                    player1_name,
+                    match["player1"]["score"],
+                    player2_name,
+                    match["player2"]["score"],
+                    match["start_date"],
+                    match["end_date"] if match["end_date"] else "En cours",
+                )
+
+            console.print(round_table)
+            console.print("\n")

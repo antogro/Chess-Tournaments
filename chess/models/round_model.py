@@ -1,47 +1,18 @@
 import random as rd
 from datetime import datetime
+from chess.models.data_manager import ManageData
+from chess.models.table_manager import TableManager
+from chess.models.tournament_model import TournamentModel, TournamentPlayer
 
 
 class RoundModels:
     def __init__(self):
+        self.tournament_model_player = TournamentPlayer()
+        self.tournament_model = TournamentModel(self, self, self, self, self)
+        self.table_manager = TableManager()
+        self.data_manager = ManageData()
+
         pass
-
-    def creat_match_data(self, player1, player2, start_time=None, end_time=None):
-        if start_time is None:
-            start_time = datetime.now().isoformat()
-
-        return {
-            "player1": {"doc_id": player1["doc_id"], "score": player1["score"]},
-            "player2": {"doc_id": player2["doc_id"], "score": player2["score"]},
-            "start_time": start_time,
-            "end_time": end_time,
-        }
-
-    def have_played_before(self, player1, player2, tournament_data):
-        if "matches" not in tournament_data:
-            return False
-        for match in tournament_data["matches"]:
-            if (
-                match["player1"]["doc_id"] == player1["doc_id"]
-                and match["player2"]["doc_id"] == match["player2"]["doc_id"]
-            ) or (
-                match["player1"]["doc_id"] == player2["doc_id"]
-                and match["player2"]["doc_id"] == player1["doc_id"]
-            ):
-                return True
-        return False
-
-    def creat_pairing_first_round(self, player_list):
-        pairings = []
-        for i in range(0, len(player_list), 2):
-            try:
-                player1 = player_list[i]
-                player2 = player_list[i + 1]
-                pairing = self.creat_match_data(player1, player2)
-                pairings.append(pairing)
-            except IndexError:
-                print("No enought player, one player don't have oppoent")
-        return pairings
 
     def mixed_player(self, tournament_data):
         if isinstance(tournament_data, list):
@@ -54,47 +25,126 @@ class RoundModels:
         assert isinstance(player_list, list)
 
         rd.shuffle(player_list)
-        tournament_data = {"player_list": player_list}
+        tournament_data["player_list"] = player_list
 
         return tournament_data
 
-    # def get_versus_player(self, tournament_data):
-    #     player_round = []
+    def creat_pairing_first_round(self, player_data, tournament_data):
+        pairings = []
+        for i in range(0, len(player_data), 2):
+            try:
+                player1 = player_data[i]
+                player2 = player_data[i + 1]
+                pairing = self.creat_match_data(player1, player2, tournament_data)
+                pairings.append(pairing)
+            except IndexError:
+                print("No enought player, one player don't have oppoent")
+        return pairings
 
-    #     for i in range(0, len(player_list), 2):
-    #         if i + 1 < len(player_list):
+    def creat_match_data(
+        self, player1, player2, tournament_data, start_time=None, end_time=None
+    ):
 
-    #             player_round.append([player_list[i], player_list[i + 1]])
-    #         else:
-    #             player_round.append([player_list[i], None])
+        if start_time is None:
+            start_time = datetime.now()
+            formated_start_time = start_time.strftime("%d-%m-%Y %H:%M:%S")
+        if isinstance(tournament_data, list):
+            tournament_data = tournament_data[0] if tournament_data else {}
 
-    #     tournament_data = {"match": player_round}
+        return {
+            "player1": {
+                "doc_id": player1.doc_id,
+                "score": player1.score,
+                "first_name": player1.first_name,
+                "last_name": player1.last_name,
+            },
+            "player2": {
+                "doc_id": player2.doc_id,
+                "score": player2.score,
+                "first_name": player2.first_name,
+                "last_name": player2.last_name,
+            },
+            "start_time": formated_start_time,
+            "end_time": end_time,
+        }
 
-    #     return round_data
+    def have_played_before(self, player1, player2, tournament_data):
+        if "matches" not in tournament_data:
+            return False
 
+        for matche in tournament_data["matches"]:
+            if (
+                matche["player1"]["doc_id"] == player1["doc_id"]
+                and matche["player2"]["doc_id"] == player2["doc_id"]
+            ) or (
+                matche["player1"]["doc_id"] == player2["doc_id"]
+                and matche["player2"]["doc_id"] == player1["doc_id"]
+            ):
+                return True
+        return False
 
-# class RoundControl:
-#     def __init__(self):
-#         pass
+    def creat_pairing_next_round(self, tournament_data):
+        player_list = self.tournament_model_player.extract_player_list(tournament_data)
+        sorted_players = sorted(player_list, key=lambda x: (-x.score, x.doc_id))
+        pairings = []
+        used_players = set()
 
+        for i in range(0, len(sorted_players) - 1, 2):
+            player1 = sorted_players[i]
+            player2 = sorted_players[i + 1]
 
-# class RoundModel:
-#     def __init__(self, player_list):
-#         self.player_list = player_list
+            if (
+                player1.doc_id not in used_players
+                and player2.doc_id not in used_players
+            ):
+                pairing = self.creat_match_data(player1, player2, tournament_data)
+                pairings.append(pairing)
+                used_players.add(player1.doc_id)
+                used_players.add(player2.doc_id)
 
-#     # def roun_data_funct(self):
-#     #     round_data = {
-#     #         "round_number": ,
-#         "status": "in_progess",
-#         "match":
-#     }
+        # Gérer le cas d'un nombre impair de joueurs
+        if len(sorted_players) % 2 != 0:
+            last_player = sorted_players[-1]
+            if last_player.doc_id not in used_players:
+                print(
+                    f"Player {last_player.first_name} {last_player.last_name} doesn't have an opponent this round."
+                )
 
-# def start_round(self, player_list):
-#     for player in player_list:
+        print("pairings: ", pairings)
+        return pairings
 
-# # def get_stronger_versus_stronger(self, player_round):
-# #     stronger_player = []
-# #     player_rank = player_round.get("rank")
+    def update_tournament_data(self, tournament_data, matches):
+        current_round = tournament_data["current_round"]
+        round_key = f"round {current_round}"
+        if round_key not in tournament_data["match"]:
+            tournament_data["match"][round_key] = []
 
-# #     for i in range(0, len(player_round)):
-# #         for i > player_rank :
+        tournament_data["match"][round_key] = []
+
+        for matche in matches:
+
+            player1 = matche["player1"]
+            player2 = matche["player2"]
+            matche_result = {
+                "player1": {"doc_id": player1["doc_id"], "score": player1["score"]},
+                "player2": {"doc_id": player2["doc_id"], "score": player2["score"]},
+                "start_time": matche["start_time"],
+                "end_time": matche["end_time"],
+            }
+
+            tournament_data["match"][round_key].append(matche_result)
+
+        return tournament_data
+
+    def extract_and_display_round(self, tournament_data):
+        extract_data = self.data_manager.extract_match_data(tournament_data)
+        extracted_data = self.tournament_model_player.link_player_name(
+            tournament_data, extract_data
+        )
+        self.table_manager.display_round_table(extracted_data)
+
+    def display_pairing_round(self, tournament_data, pairings):
+        extracted_data = self.tournament_model_player.link_player_name(
+            tournament_data, pairings
+        )
+        self.table_manager.display_round_table(extracted_data)
