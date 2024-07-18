@@ -25,7 +25,7 @@ class Player:
         self.score = score
         self.doc_id = doc_id
 
-        self.manage_data = ManageData
+        self.manage_data = ManageData()
 
         if not os.path.exists('_data'):
             os.mkdir('_data')
@@ -58,6 +58,10 @@ class Player:
         for player in self.table_player.all():
             self.player_list.append(player["name"])
             return self.player_list
+        
+    def get_player(self, player_id):
+        return self.manage_data.get_player(player_id)
+
     # def get_player_by_id(self, chess_id):
     #     """Renvoie le joueur par son id"""
     #     Player = Query()

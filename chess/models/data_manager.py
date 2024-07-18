@@ -53,7 +53,7 @@ class ManageData:
     def update_round(self, round_id, update_data):
         self.table_round.update(update_data, Query().doc_id == round_id)
 
-    def extract_match_data(self, tournament_data):
+    def extract_match_data_from_match(self, tournament_data):
         current_round = tournament_data.get("current_round", 1)
         if current_round > 1:
             round_key = f"round {current_round-1}"

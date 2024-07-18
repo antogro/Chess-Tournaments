@@ -31,11 +31,11 @@ class RoundView:
     def get_match_result(self, player1, player2, tournament_data):
 
         print(
-            f"\n -- Round{tournament_data['current_round']}: Player 1: {player1['first_name']} {player1['last_name']} -- "
+            f"\n -- Round{tournament_data['current_round']}: Player 1: {player1['name']} -- "
         )
         print("VS")
         print(
-            f" -- Round{tournament_data['current_round']}: Player 2: {player2['first_name']} {player2['last_name']} -- \n"
+            f" -- Round{tournament_data['current_round']}: Player 2: {player2['name']} -- \n"
         )
         while True:
             result = input(

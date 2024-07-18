@@ -137,7 +137,7 @@ class RoundModels:
         return tournament_data
 
     def extract_and_display_round(self, tournament_data):
-        extract_data = self.data_manager.extract_match_data(tournament_data)
+        extract_data = self.data_manager.extract_match_data_from_match(tournament_data)
         extracted_data = self.tournament_model_player.link_player_name(
             tournament_data, extract_data
         )

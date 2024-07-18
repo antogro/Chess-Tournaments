@@ -64,6 +64,8 @@ class ControlTournament:
         # self.tournament_model = Tournament()
         pass
 
+    
+
     def creat_tournament(self):
         """creat tournament"""
         tournament_data = self.tournament_view.get_tournament_data()
@@ -95,15 +97,12 @@ class ControlTournament:
 
     def continue_last_tournament(self):
         tournament_id = self.tournament_model.get_last_tournament_id()
-        print('tournament_id: ', tournament_id)
+
         tournament_data = self.tournament_model.resume_tournament(tournament_id)
+        print('tournament_data: ', tournament_data)
         self.tournament_model.tournament_to_dict
 
         self.tournament_model = TournamentModel(**tournament_data)
-        extracted_data = self.data_manager.extract_match_data(tournament_data)
-        data = self.tournament_model_player.link_player_name(tournament_data, extracted_data)
-        print('data: ', data)
-        self.table_manager.display_round_table(data)
 
         self.table_manager.display_tournament_table(tournament_data)
-    # def current_tournament_data(self):
+        self.round_control.round(tournament_data, tournament_id)
