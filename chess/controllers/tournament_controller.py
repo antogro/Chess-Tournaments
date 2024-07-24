@@ -2,9 +2,9 @@ from chess.controllers.round_controller import RoundControl, RoundTournament
 from chess.models.data_manager import ManageData
 from chess.models.table_manager import TableManager
 from chess.views.tournament_view import TournamentsView
-from chess.models.tournament_model import TournamentModel, TournamentPlayer
+from chess.models.tournament_model import TournamentModel, TournamentPlayer, TournamentManager, TournamentPlayerManager
 from chess.views.player_view import PlayerView
-from chess.models.player_model import Player
+from chess.models.player_model import Player, PlayerManager
 from chess.models.round_model import RoundModels
 # from chess.views.round_view import RoundView
 # from chess.models.player_model import Player
@@ -32,10 +32,11 @@ class TournamentControl:
 
             elif choice == "3":
                 """select and start round"""
+                self.control_tournament.select_and_start_round()
                 break
             elif choice == "4":
                 """show list of tournament"""
-                self.control_tournament.display_tournament()
+                self.control_tournament.display_all_tournament()
 
             elif choice == "5":
                 """back to main menu"""
@@ -51,58 +52,52 @@ class ControlTournament:
 
     def __init__(self):
         self.tournament_view = TournamentsView()
-        self.tournament_model_player = TournamentPlayer()
-        self.player_model = Player(self, self, self, self, self)
-        self.data_manager = ManageData()
+        self.player_manager = PlayerManager()
+        self.tournament_manager = TournamentManager()
         self.table_manager = TableManager()
-        self.round_model = RoundModels()
-        self.player_view = PlayerView(self, self, self, self, self)
-        self.round_control = RoundControl(self, self, self)
+        self.player_view = PlayerView()
+        self.round_control = RoundControl()
         self.round_tournament = RoundTournament()
-        self.tournament_model = TournamentModel(self, self, self, self, self)
+        self.tournament_player_manager = TournamentPlayerManager()
+
 
         # self.tournament_model = Tournament()
         pass
 
-    
+
 
     def creat_tournament(self):
         """creat tournament"""
         tournament_data = self.tournament_view.get_tournament_data()
-        tournament_data = self.tournament_model.doc_id_tournament(tournament_data)
-        self.tournament_model = TournamentModel(**tournament_data)
+        tournament = TournamentModel(**tournament_data)
 
-        table_player_list = self.data_manager.get_player_list()
+        players = self.player_manager.get_player_list()
+        self.table_manager.display_table("Player list", [player for player in players])
 
-        self.table_manager.display_player_table(table_player_list)
         choice = self.tournament_view.tournament_choose_player()
-        player_list = self.tournament_model_player.parsed_player_number(choice)
+        tournament = self.tournament_player_manager.add_player(choice, tournament)
 
-        tournament_data["player_list"] = player_list
+        player_data = self.tournament_player_manager.extract_player_list(tournament.to_dict)
+   
+        tournament_id = self.tournament_manager.save_tournament(tournament)
 
-        player_data = self.tournament_model_player.extract_player_list(tournament_data)
+        self.table_manager.display_table("Tournament: ", [tournament.to_dict])
+        self.table_manager.display_table("Player list: ", [TournamentPlayer.to_dict(player) for player in player_data])
+        print('tournament: ', tournament)
+        self.round_control.round(tournament, tournament_id, player_data)
 
-        self.player_view.display_number_to_player(player_data)
-
-        tournament_id = self.tournament_model.save_tournament()
-
-        self.table_manager.display_tournament_table(tournament_data)
-        self.round_control.round(tournament_data, tournament_id)
-
-    def display_tournament(self):
+    def display_all_tournament(self):
         """display tournament"""
-        tournament_data = self.data_manager.get_tournament_list()
-        for tournament in tournament_data:
-            self.table_manager.display_tournament_table(tournament)
+        tournaments = self.tournament_manager.get_all_tournament()
+        self.table_manager.display_table("Tournament", [tournament for tournament in tournaments])
 
     def continue_last_tournament(self):
-        tournament_id = self.tournament_model.get_last_tournament_id()
+        tournament_id = self.tournament_manager.get_last_tournament_id()
+        tournament = self.tournament_manager.get_tournament(tournament_id)
+        player_data = self.tournament_player_manager.extract_player_list(tournament)
+        self.table_manager.display_table("Tournament: ", [tournament.to_dict])
+        self.round_control.round(tournament, tournament_id, player_data)
 
-        tournament_data = self.tournament_model.resume_tournament(tournament_id)
-        print('tournament_data: ', tournament_data)
-        self.tournament_model.tournament_to_dict
+    def select_and_start_round(self):
+        """select and start round"""
 
-        self.tournament_model = TournamentModel(**tournament_data)
-
-        self.table_manager.display_tournament_table(tournament_data)
-        self.round_control.round(tournament_data, tournament_id)

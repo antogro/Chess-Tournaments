@@ -1,66 +1,66 @@
+from dataclasses import dataclass
+from typing import Dict, Any
 from tinydb import TinyDB
 from chess.models.data_manager import ManageData
-import os
 
 DB_PATH_PLAYER = "_data/players.json"
 
 
+@dataclass
 class Player:
-    """
-    Permet de sauvegarder le informations des joueurs
-    """
+    first_name: str
+    last_name: str
+    birth_date: str
+    chess_id: str
+    doc_id: int = 1
+    score: float = 0.0
 
-    def __init__(self,
-                 last_name,
-                 first_name,
-                 birth_date,
-                 chess_id,
-                 doc_id,
-                 score=0):
+    @property
+    def full_name(self):
+        return f"{self.last_name} {self.first_name}"
 
-        self.last_name = last_name
-        self.first_name = first_name
-        self.birth_date = birth_date
-        self.chess_id = chess_id
-        self.score = score
-        self.doc_id = doc_id
-
-        self.manage_data = ManageData()
-
-        if not os.path.exists('_data'):
-            os.mkdir('_data')
-        self.db = TinyDB(DB_PATH_PLAYER)
-        self.table_player = self.db.table('players')
-
-    def player_to_dict(self):
+    def to_dict(self):
         return {
-            'name': self.last_name,
             'first_name': self.first_name,
+            'last_name': self.last_name,
             'birth_date': self.birth_date,
             'chess_id': self.chess_id,
             'score': self.score,
             'doc_id': self.doc_id
         }
     
-    def doc_id_player(self, player_data):
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Player':
+        return cls(**data)
+
+
+@dataclass
+class PlayerManager(ManageData):
+    def __init__(self):
+        self.manage_data = ManageData()
+
+    def generate_doc_id_player(self, player_data):
         """doc id player"""
-        all_player = self.table_player.all()
+        all_player = self.manage_data.get_player_list()
         highest_doc_id = max([doc.doc_id for doc in all_player]) if all_player else 0
-        new_doc_id = highest_doc_id + 1
-        player_data["doc_id"] = new_doc_id
+        return int(highest_doc_id) + 1
+    
+    def creat_player(self, player_data):
+        self.doc_id = self.generate_doc_id_player(player_data)
+        player_data["doc_id"] = self.doc_id
         return player_data
+    
+    def save_player(self, player: Player):
+        return self.manage_data.save_player(player.to_dict())
 
-    def save_player(self):
-        return self.table_player.insert(self.player_to_dict())
-
-    def set_player_list(self):
-        self.player_list = []
-        for player in self.table_player.all():
-            self.player_list.append(player["name"])
-            return self.player_list
+    def get_player_list(self):
+        return self.manage_data.get_player_list()
         
-    def get_player(self, player_id):
-        return self.manage_data.get_player(player_id)
+    def get_player(self, player_id: str) -> 'Player':
+        player_data = self.manage_data.get_player(player_id)
+        if player_data is None:
+            raise ValueError(f"No player found for doc id: {player_id}")
+        return (player_data)
 
     # def get_player_by_id(self, chess_id):
     #     """Renvoie le joueur par son id"""

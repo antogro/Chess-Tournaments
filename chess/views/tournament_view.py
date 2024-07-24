@@ -30,9 +30,9 @@ class TournamentsView:
         """
         Get  information for the tournament
         """
-        tournament_name = input("Right the name of the tournament: ")
-        tournament_place = input("Right the place of the tournament: ")
-        tournament_description = input("Right the description of the tournament: ")
+        self.name = input("Right the name of the tournament: ")
+        self.place = input("Right the place of the tournament: ")
+        self.description = input("Right the description of the tournament: ")
 
         while True:
             tournament_start_date = input(
@@ -47,17 +47,17 @@ class TournamentsView:
             except ValueError:
                 print("Incorrect data format, should be dd/mm/yyyy")
 
-        number_of_round = self.round_tournament()
+        self.number_of_round = self.round_tournament()
 
         tournament_data = {
-            "name": tournament_name,
-            "place": tournament_place,
+            "name": self.name,
+            "place": self.place,
             "start_date": start_date,
-            "number_of_round": number_of_round,
-            "description": tournament_description,
+            "number_of_round": self.number_of_round,
+            "description": self.description,
             "current_round": 1,
-            "match": {},
-            "status": "in_progress"
+            "matches": {},
+            
         }
 
         return tournament_data
@@ -66,13 +66,13 @@ class TournamentsView:
         """Create a round for the tournament"""
         number_of_round = input("Rigth your desire number of round (default:4): ")
         if number_of_round == "":
-            return "4"
+            return 4
         else:
             try:
                 return int(number_of_round)
             except ValueError:
                 print("Incorrect input, Using default value of 4 round")
-                return "4"
+                return 4
 
     def tournament_choose_player(self):
         """fonction to choose a player for a tournament"""

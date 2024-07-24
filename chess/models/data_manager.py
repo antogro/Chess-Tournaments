@@ -13,6 +13,7 @@ class ManageData:
         self.table_round = self.tournament_db.table("round")
 
     def save_player(self, data):
+        print('data: ', data)
         id = self.table_players.insert(data)
         return id
 
@@ -29,7 +30,7 @@ class ManageData:
         return self.table_players.all()
 
     def get_tournament_list(self):
-        """Renvoie la liste des joueurs"""
+        """Renvoie la liste des tournois"""
         return self.table_tournament.all()
 
     def load_tournament_data(self, tournament_id):
@@ -50,10 +51,7 @@ class ManageData:
     def get_tournament(self, tournament_id):
         return self.table_tournament.search(Query().doc_id == tournament_id)
 
-    def update_round(self, round_id, update_data):
-        self.table_round.update(update_data, Query().doc_id == round_id)
-
-    def extract_match_data_from_match(self, tournament_data):
+    def extract_match_data(self, tournament_data):
         current_round = tournament_data.get("current_round", 1)
         if current_round > 1:
             round_key = f"round {current_round-1}"
@@ -66,11 +64,10 @@ class ManageData:
 
         extracted_data = []
         for round_key, matches in tournament_data["match"].items():
-            for i, match in enumerate(matches):
+            for match in enumerate(matches):
                 extracted_data.append(
                     {
-                        "match": i + 1,
-                        "round": f"round {current_round}",
+                        "name": f"round {current_round}",
                         "player1": {
                             "score": match["player1"]["score"],
                             "doc_id": match["player1"]["doc_id"],

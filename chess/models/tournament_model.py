@@ -1,172 +1,208 @@
-# from typing import Dict, Any
+from dataclasses import dataclass, field
+from typing import Any, List, Dict, Optional
 from datetime import datetime
 from tinydb import TinyDB, Query
-from chess.models.player_model import Player
-import os
-
-
+from chess.models.player_model import Player, PlayerManager
 from chess.models.data_manager import ManageData
 
-DB_PATH_TOURNAMENT = "_data/tournament.json"
+
 DB_PATH_PLAYER = "_data/players.json"
+DB_PATH_TOURNAMENT = "_data/tournament.json"
 
 
+@dataclass
 class TournamentModel:
-    def __init__(
-        self,
-        name,
-        place,
-        start_date,
-        description,
-        number_of_round,
-        status="in_progress",
-        current_round=1,
-        end_date=None,
-        match=None,
-        doc_id=None,
-        player_list=None,
-    ):
-        self._name = name
-        self._place = place
-        self._start_date = start_date
-        self._end_date = end_date
-        self._description = description
-        self._number_of_round = number_of_round
-        self._status = status
-        self._current_round = current_round
-        self._player_list = player_list
-        self.doc_id = doc_id
-        self.match = match if match is not None else {}
-        self.manage_data = ManageData()
-
-        if not os.path.exists("_data"):
-            os.mkdir("_data")
-        self.db_tournament = TinyDB(DB_PATH_TOURNAMENT)
-        self.table_tournament = self.db_tournament.table("tournament")
-        pass
+    name: str
+    place: str
+    start_date: str
+    description: str
+    number_of_round: int
+    current_round: int = 1
+    _status: str = "In_progress"
+    matches: dict[str, Any] = field(default_factory=dict)
+    doc_id: Optional[int] = None
+    end_date: Optional[str] = None
+    _players: List["TournamentPlayer"] = field(default_factory=list)
 
     @property
-    def tournament_to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "doc_id": self.doc_id,
-            "name": self._name,
-            "place": self._place,
-            "start_date": self._start_date,
-            "end_date": self._end_date,
-            "description": self._description,
-            "number_of_round": self._number_of_round,
-            "current_round": self._current_round,
-            "status": self._status,
-            "player_list": self._player_list,
-            "match": self.match,
+            "name": self.name,
+            "place": self.place,
+            "start_date": self.start_date,
+            "end_date": self.end_date,
+            "description": self.description,
+            "number_of_round": self.number_of_round,
+            "current_round": self.current_round,
+            "status": self.status,
+            "players": [player for player in self.players],
+            "matches": self.matches,
         }
 
-    @property
-    def current_round(self):
-        return self._current_round
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "TournamentModel":
+        players = data.get("players", [])
+        status = data.get("status")  # Extract status separately
+        tournament_data = {k: v for k, v in data.items() if k != "players" and k != "status"}
+        tournament = cls(**tournament_data)
+        tournament._status = status  # Set status after creating the object
+        tournament.players = players
+        return tournament
 
-    @current_round.setter
-    def current_round_setter(self, value):
-        self._current_round = value
+
+    @property
+    def players(self) -> List["TournamentPlayer"]:
+        return self._players
+
+    @players.setter
+    def players(self, value: List["TournamentPlayer"]):
+        self._players = value
 
     @property
     def status(self):
         return self._status
 
-    @property
-    def number_of_round(self):
-        return self._number_of_round
-
     @status.setter
-    def status_setter(self, value):
-        if value in ["progress", "paused", "finished"]:
+    def set_status(self, value):
+        if value in ["In_progress", "Paused", "Finished"]:
             self._status = value
         else:
             raise ValueError("Invalid status")
 
+    def add_player(self, player: "TournamentPlayer"):
+        if player not in self.players:
+            self.players.append(player)
+        else:
+            raise ValueError("Player already exists in the tournament")
+
     def next_round(self):
-        self._current_round += 1
+        if self.current_round < self.number_of_round:
+            self.current_round += 1
+        else:
+            raise ValueError("Tournament has already reached its final round")
 
-    def set_status_in_progress(self):
-        self._status = "progress"
+    def resume(self):
+        self.set_status = "In_progress"
+        
 
-    def set_status_paused(self):
-        self._status = "paused"
+    def paused(self):
+        self.set_status = "Paused"
 
-    def set_status_finished(self):
-        self._status = "finished"
+    def finished(self):
+        self.set_status = "Finished"
 
-    def get_all_tournament_data(self):
-        return self.table_tournament.all()
 
-    def get_tournament_data(self, tournament_id):
-        return self.manage_data.load_tournament_data(tournament_id)
+class TournamentManager:
 
-    def save_tournament(self):
-        return self.table_tournament.insert(self.tournament_to_dict)
+    def __init__(self):
+        self.manage_data = ManageData()
+        self.db = TinyDB(DB_PATH_PLAYER)
+        self.db_tournament = self.db.table("tournament")
 
-    def get_tournament_data_by_name(self, tournament_name):
-        Tournament = Query()
-        return self.table_tournament.search(Tournament.name == tournament_name)
 
-    def update_tournament(self):
-        return self.table_tournament.update(self.tournament_to_dict)
+    def save_tournament(self, tournament: TournamentModel) -> int:
+        all_tournament = self.manage_data.get_tournament_list()
+        self.highest_doc_id = (
+            max([doc.doc_id for doc in all_tournament]) if all_tournament else 0
+        )
+        self.doc_id = self.highest_doc_id + 1
+        tournament.doc_id = self.doc_id
+        tournament_dict = tournament.to_dict
+        return self.manage_data.save_tournament(tournament_dict)
 
-    def resume_tournament(self, tournament_id):
-        data = self.get_tournament_data(tournament_id)
-        if data:
-            if isinstance(data, list) and len(data) > 0:
-                data = data[0]
+    def get_all_tournament(self):
+        return self.manage_data.get_tournament_list()
 
-            self.doc_id = tournament_id
-            self.set_status_in_progress()
-        return data
+    def get_tournament(self, tournament_id: int) -> 'TournamentModel':
+        tournament_data = self.manage_data.load_tournament_data(tournament_id)
+        tournaments = tournament_data[0]
+        if tournaments is None:
+            raise ValueError(f"Tournament not found:{tournament_id}")
+        return TournamentModel.from_dict(tournaments)
+         
 
-    def paused_tournament(self, tournament_id):
-        self.get_tournament_data(tournament_id)
-        self.set_status_paused()
-        self.update_tournament()
+    def update(
+        self, tournament: TournamentModel, matches: List[Dict[str, Any]]
+    ) -> None:
+        current_round = tournament.current_round
+        round_key = f"Round {current_round}"
 
-    def complete_tournament(self, tournament_id, tournament_data):
-        self.get_tournament_data(tournament_id)
-        self.set_status_finished()
-        tournament_data["end_date"] = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        self.update_tournament()
+        if round_key not in tournament.matches:
+            tournament.matches[round_key] = []
 
-    def get_last_tournament_id(self):
-        all_tournament = self.table_tournament.all()
+        tournament.matches[round_key] = []
+
+        for matche_data in matches:
+            player1 = TournamentPlayer.from_dict(matche_data["player1"])
+            player2 = TournamentPlayer.from_dict(matche_data["player2"])
+            match = Match(
+                player1=player1,
+                player2=player2,
+                start_date=matche_data["start_date"],
+                end_date=matche_data["end_"],
+            )
+
+            tournament.matches[round_key].append(match.to_dict())
+        try:
+            return self.manage_data.update_tournament(
+                tournament.doc_id, tournament.to_dict
+            )
+        except Exception as e:
+            print(f"fail update tournament: {e}")
+
+    def get_last_tournament_id(self) -> int:
+        all_tournament = self.get_all_tournament()
         if not all_tournament:
             raise ValueError("No tournament_found.")
         return max([doc.doc_id for doc in all_tournament])
 
-    def doc_id_tournament(self, tournament_data):
-        """doc id player"""
-        all_tournament = self.table_tournament.all()
-        highest_doc_id = (
-            max([doc.doc_id for doc in all_tournament]) if all_tournament else 0
-        )
-        new_doc_id = highest_doc_id + 1
-        tournament_data["doc_id"] = new_doc_id
-        return tournament_data
 
-
+@dataclass
 class TournamentPlayer:
+    doc_id: int
+    score: float
+    first_name: str
+    last_name: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "doc_id": self.doc_id,
+            "score": self.score,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "TournamentPlayer":
+        return cls(**data)
+
+    def __str__(self) -> str:
+        return f"{self.first_name} {self.last_name}"
+
+class TournamentPlayerManager:
 
     def __init__(self):
         self.db = TinyDB(DB_PATH_PLAYER)
-        self.player_model = Player(self, self, self, self, self)
         self.db_player = self.db.table("players")
         self.manage_data = ManageData()
+        self.player_manager = PlayerManager()
         pass
 
     def parsed_player_number(self, list_player_number):
         player_number = [int(s) for s in list_player_number.split()]
         return player_number
+    
+    def add_player(self, player, tournament):
+        new_players = self.parsed_player_number(player)
+        tournament.players.extend(new_players)
+        return tournament
 
-    def extract_player_list(self, tournament_data):
+    def extract_player_list(self, tournament):
         """choose player for the tournament"""
         try:
-            list_player_number = tournament_data["player_list"]
+            list_player_number = tournament['players']
             player_list = []
             for player_id in list_player_number:
                 player = self.manage_data.get_player(player_id)
@@ -189,62 +225,3 @@ class TournamentPlayer:
         except KeyError:
             raise ValueError("tournament_data must contain a 'player_list' key")
 
-    def link_player_name(self, tournament_data, extracted_matches):
-        try:
-            player_ids = tournament_data.get("player_list", [])
-            player_details = [
-                self.manage_data.get_player(player_id) for player_id in player_ids
-            ]
-
-            player_dict = {
-                player["doc_id"]: f"{player['first_name']} {player['last_name']}"
-                for player in player_details
-            }
-
-            for match in extracted_matches:
-                match["player1"]["name"] = player_dict.get(
-                    match["player1"]["doc_id"], "Unknown"
-                )
-                match["player2"]["name"] = player_dict.get(
-                    match["player2"]["doc_id"], "Unknown"
-                )
-            return extracted_matches
-
-        except KeyError as e:
-            print(f"KeyError: {e}")
-            raise
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            raise
-
-        # list_player_number = tournament_data["player_list"]
-        # player = []
-        # for pid in list_player_number:
-        #     player_data = self.manage_data.get_player(pid)
-        #     if player_data:
-        #         player.append(Player(**player_data))
-
-        # return player
-        # player_list = []
-        # for player_id in list_player_number:
-        #     if player:
-        #         player_list.append(player)
-
-        # player_object = []
-        # for player_data in player_list:
-        #     player_data = Player(
-        #         first_name=player_data["first_name"],
-        #         last_name=player_data["last_name"],
-        #         doc_id=player_data["doc_id"],
-        #         score=player_data["score"],
-        #         birth_date=player_data["birth_date"],
-        #         chess_id=player_data["chess_id"],
-        #     )
-        #     player_object.append(player_data)
-
-        # return player_object
-
-
-class TournamentRepport:
-    def __init__(self) -> None:
-        pass

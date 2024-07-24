@@ -18,24 +18,27 @@ class RoundView:
         return input("\n Do your choice: ")
 
     def display_pairing(self, pairings):
+        print('pairings: ', pairings)
         for pairing in pairings:
 
-            player1 = pairing["player1"]
-            player2 = pairing["player2"]
-            print(f"\n -- Player 1: {player1['first_name']} {player1['last_name']} -- ")
+            player1 = Player(**pairing['player1'])
+            player2 = Player(**pairing['player2'])
+            player1_score = pairing['player1_score']
+            player2_score = pairing['player2_score']
+            print(f"\n -- Player 1: {player1.first_name} {player1.last_name} {player1_score}-- ")
             print("VS")
             print(
-                f"\n -- Player 2: {player2['first_name']} {player2['last_name']} -- \n"
+                f"\n -- Player 2: {player2.first_name} {player2.last_name} {player2_score}-- \n"
             )
 
     def get_match_result(self, player1, player2, tournament_data):
 
         print(
-            f"\n -- Round{tournament_data['current_round']}: Player 1: {player1['name']} -- "
+            f"\n -- Round{tournament_data.current_round}: Player 1: {player1} -- "
         )
         print("VS")
         print(
-            f" -- Round{tournament_data['current_round']}: Player 2: {player2['name']} -- \n"
+            f" -- Round{tournament_data.current_round}: Player 2: {player2} -- \n"
         )
         while True:
             result = input(
