@@ -123,27 +123,14 @@ class TournamentManager:
          
 
     def update(
-        self, tournament: TournamentModel, matches: List[Dict[str, Any]]
-    ) -> None:
+        self, tournament: TournamentModel) -> None:
         current_round = tournament.current_round
-        round_key = f"Round {current_round}"
-
-        if round_key not in tournament.matches:
-            tournament.matches[round_key] = []
-
-        tournament.matches[round_key] = []
-
-        for matche_data in matches:
-            player1 = TournamentPlayer.from_dict(matche_data["player1"])
-            player2 = TournamentPlayer.from_dict(matche_data["player2"])
-            match = Match(
-                player1=player1,
-                player2=player2,
-                start_date=matche_data["start_date"],
-                end_date=matche_data["end_"],
-            )
-
-            tournament.matches[round_key].append(match.to_dict())
+        round_key = f"round {current_round - 1}"
+        match = tournament.matches[round_key][0]
+        print('tournament.matches[round_key]: ', match)
+        for player in match:
+            Player.to_dict(player)
+        
         try:
             return self.manage_data.update_tournament(
                 tournament.doc_id, tournament.to_dict
@@ -161,9 +148,8 @@ class TournamentManager:
 @dataclass
 class TournamentPlayer:
     doc_id: int
-    score: float
-    first_name: str
-    last_name: str
+    score: float = 0
+    
 
     def to_dict(self) -> Dict[str, Any]:
         return {

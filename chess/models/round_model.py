@@ -150,20 +150,13 @@ class RoundManager:
 
     def extract_and_display_round(self, pairings: List[TournamentPlayer]):
         """Extracts and displays the round from the tournament model"""
-
         readable_pairings = []
-
         for pairing in pairings:
-
             pairing_dict = pairing.to_dict()
-
             readable_pairings.append(pairing_dict)
-        table_data = self.format_table_data(readable_pairings)
-        print('table_data: ', table_data)
-        
 
 
-        self.table_manager.display_table("Opponent list", table_data)
+        self.table_manager.display_table("Opponent list", readable_pairings)
 
     def display_pairing_round(self, tournament):
         match = tournament.match

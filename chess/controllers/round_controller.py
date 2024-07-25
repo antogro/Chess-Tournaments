@@ -43,7 +43,7 @@ class RoundTournament:
         self.tournament_player_manager = TournamentPlayerManager()
         self.tournament_manager = TournamentManager()
         self.player_view = PlayerView()
-        self.tournament_model_player = TournamentPlayer(self, self, self, self)
+        self.tournament_model_player = TournamentPlayer(self, self)
 
     def manage_round(self, tournaments, tournament_id, player_data):
         """manage round"""
@@ -58,7 +58,7 @@ class RoundTournament:
 
 
         if self.round_view.get_round_choice() == "1":
-            self.play_round(extract_data, tournament)
+            self.play_round(pairings, tournament)
         else:
             self.paused_round(tournament)
             return
@@ -73,16 +73,17 @@ class RoundTournament:
             return [Match.from_dict(match_data) for match_data in round_model_data["matches"]]
 
         if current_round == 1:
-            pairings = self.pairing_manager.creat_pairing_first_round(players)
-
-
+            pairings = self.pairing_manager.creat_pairing_first_round(tournament.players)
+            date= RoundModels.start_date.setter(datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
 
             if round_key not in tournament.matches:
-                tournament.matches[round_key] = RoundModels(name=f"Round {current_round}", _start_date=datetime.now())
-        
-            tournament.matches[round_key] = pairings
+                tournament.matches = RoundModels(name=f"Round {current_round}", _start_date=date, matches=pairings)
             
 
+     
+            
+
+            print('tournament: ', tournament)
             return tournament, pairings
         else:
             return self.round_model.creat_pairing_next_round(tournament_data)
@@ -92,11 +93,13 @@ class RoundTournament:
         
 
         update_pairing = self.manage_score(pairings, tournament)
-        tournament.next_round
-        tournaments = self.tournament_manager.update(
-            tournament, update_pairing
-        )
-        self.round_manager.extract_and_display_round(tournament, player_data)
+        tournament.current_round += 1
+        print('tournament: ', tournament)
+    
+       
+        tournaments = self.tournament_manager.update(tournament)
+        self.round_manager.extract_and_display_round(update_pairing)
+        self.table_manager.display_table("Tournament: ", [tournaments.to_dict()])
 
     # def manage_rond(self, tournament_data, tournament_id):
     #     """manage round"""
@@ -126,10 +129,12 @@ class RoundTournament:
     #         print("match finish")
 
     def manage_score(self, pairings, tournament_data):
+ 
 
         for pairing in pairings:
-            player1 = TournamentPlayer(**pairing['player1'])
-            player2 = TournamentPlayer(**pairing['player2'])
+            player1 = pairing.player1
+            player2 = pairing.player2
+       
 
             result = self.round_view.get_match_result(player1, player2, tournament_data)
             player1.score = float(player1.score)
@@ -137,9 +142,9 @@ class RoundTournament:
 
             if result == "1":
                 player1.score += 1
-                self.round_view.display_match_result(player1.first_name)
+                self.round_view.display_match_result(player1)
             elif result == "2":
-                player2.score += 1
+                player2 += 1
                 self.round_view.display_match_result(player2.first_name)
             elif result == "0":
                 self.round_view.display_match_result(None, is_draw=True)
@@ -148,7 +153,7 @@ class RoundTournament:
             player1.score = str(player1.score)
             player2.score = str(player2.score)
 
-            pairing["end_date"] = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            pairing.end_date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
         return pairings
 

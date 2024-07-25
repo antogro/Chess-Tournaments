@@ -34,11 +34,11 @@ class RoundView:
     def get_match_result(self, player1, player2, tournament_data):
 
         print(
-            f"\n -- Round{tournament_data.current_round}: Player 1: {player1} -- "
+            f"\n -- Round{tournament_data.current_round}: Player 1: {player1.first_name} {player1.last_name} -- "
         )
         print("VS")
         print(
-            f" -- Round{tournament_data.current_round}: Player 2: {player2} -- \n"
+            f" -- Round{tournament_data.current_round}: Player 2: {player2.first_name} {player2.last_name}-- \n"
         )
         while True:
             result = input(
@@ -51,9 +51,9 @@ class RoundView:
 
     def display_match_result(self, winner_name, is_draw=False):
         if is_draw:
-            print("Round is draw")
+            print("\n --- Round is draw --- \n")
         else:
-            f"\n ---- {winner_name} win ---- \n"
+            f"\n ---- Winner -> {winner_name.first_name} {winner_name.last_name} win ---- \n"
 
     def display_round_paused(self):
         print("Round is paused, please select an option:")

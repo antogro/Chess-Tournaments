@@ -30,6 +30,8 @@ class PairingManager:
                 pairings.append(match)
             else:
                 print(f"Warning: Player {players[i].first_name} {players[i].last_name} doesn't have an opponent in this round.")
+
+        print('pairings: ', pairings)
         return pairings
 
 
@@ -55,7 +57,7 @@ class PairingManager:
     @staticmethod
     def creat_pairing_next_round(tournament: TournamentModel) -> List[Match]:
 
-        sorted_players = sorted(tournament._player_list, key=lambda x: (-x.score, x.doc_id))
+        sorted_players = sorted(tournament.players, key=lambda x: (-x.score, x.doc_id))
         pairings = []
         used_players = set()
 
