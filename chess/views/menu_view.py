@@ -9,6 +9,6 @@ class MenuView:
         print("2. Player controllers")
         print("Q. Exit the application")
         print("")
-        choice = input("Do the best choice for you: ")
+        choice = input("Do your choice: ")
 
         return choice

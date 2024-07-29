@@ -7,8 +7,7 @@ class RoundView:
         print("Please select an option:")
         print("1. Start the round")
         print("2. Stop  the round")
-        print("4. Round report")
-        print("5. Return to the main menu")
+        print("Q. Return to the main menu")
         choice = input("Do a choice: ")
         return choice
 
@@ -20,29 +19,26 @@ class RoundView:
     def display_pairing(self, pairings):
         print('pairings: ', pairings)
         for pairing in pairings:
-
-            player1 = Player(**pairing['player1'])
-            player2 = Player(**pairing['player2'])
             player1_score = pairing['player1_score']
             player2_score = pairing['player2_score']
-            print(f"\n -- Player 1: {player1.first_name} {player1.last_name} {player1_score}-- ")
+            print(f"\n --- Player 1: {player1_score.first_name} {player1_score.last_name} --- ")
             print("VS")
             print(
-                f"\n -- Player 2: {player2.first_name} {player2.last_name} {player2_score}-- \n"
+                f"--- Player 2: {player2_score.first_name} {player2_score.last_name} --- \n"
             )
 
-    def get_match_result(self, player1, player2, tournament_data):
+    def get_match_result(self, pairing, name):
 
         print(
-            f"\n -- Round{tournament_data.current_round}: Player 1: {player1.first_name} {player1.last_name} -- "
+            f"\n -- Round{name}: Player 1: {pairing.player1_score.player.full_name} -- "
         )
         print("VS")
         print(
-            f" -- Round{tournament_data.current_round}: Player 2: {player2.first_name} {player2.last_name}-- \n"
+            f" -- Round{name}: Player 2: {pairing.player2_score.player.full_name} -- \n"
         )
         while True:
             result = input(
-                "write the number of the result (Player1 win = 1, player2 win = 2, draw = 0): "
+                "write the number of the result (Player1 win = 1, Player2 win = 2, Draw = 0): "
             )
             if result in ["0", "1", "2"]:
                 return result
@@ -53,7 +49,7 @@ class RoundView:
         if is_draw:
             print("\n --- Round is draw --- \n")
         else:
-            f"\n ---- Winner -> {winner_name.first_name} {winner_name.last_name} win ---- \n"
+            f"\n ---- Winner -> {winner_name} win ---- \n"
 
     def display_round_paused(self):
         print("Round is paused, please select an option:")

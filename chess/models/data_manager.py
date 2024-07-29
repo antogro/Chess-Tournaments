@@ -13,7 +13,6 @@ class ManageData:
         self.table_round = self.tournament_db.table("round")
 
     def save_player(self, data):
-        print('data: ', data)
         id = self.table_players.insert(data)
         return id
 

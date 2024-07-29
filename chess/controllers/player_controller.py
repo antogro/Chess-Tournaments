@@ -1,8 +1,6 @@
-from chess.models.data_manager import ManageData
 from chess.views.player_view import PlayerView
-from chess.models.player_model import Player, PlayerManager
-from chess.models.table_manager import TableManager
-
+from chess.models.player_model import Player
+from ..views.base_views import Display
 
 class MainPlayerControl:
     def __init__(self):
@@ -19,33 +17,41 @@ class MainPlayerControl:
 
             elif choice == "2":
                 self.player_control.display_player_list()
+            
+            elif choice == "3":
+                self.player_control.get_player_by_id()
 
             elif choice == "Q" or choice == "q":
+
                 break
 
             else:
                 self.view.display_error_message("Do a better choice")
                 continue
+              
 
-
-class PlayersControl:
+class PlayersControl(Player):
     def __init__(self):
-        self.manage_data = ManageData()
-        self.table_manager = TableManager()
-        self.player_manager = PlayerManager()
         self.player_view = PlayerView()
+        self.display = Display()
+        self.players = Player(self, self, self ,self, self, self)  
 
     def add_player(self):
         data = self.player_view.get_player_data()
-        player_data = self.player_manager.creat_player(data)
-        player = Player(**player_data)
-        self.player_manager.save_player(player)
-        self.table_manager.display_table("Player list : ", [player.to_dict()])
+        player = self.create_player(data)
+        self.player = Player(**player)
 
-        self.player_view.display_new_player(player)
-        
-
+        self.player.save()
+        self.display.display_table("New player created: ", [self.player.to_dict])
+        self.player_view.display_new_player(self.player)
 
     def display_player_list(self):
-        player_list = self.player_manager.get_player_list()
-        self.table_manager.display_table("Player list", [player for player in player_list])
+        player = self.players.all()
+        self.display.display_table("Player list", player)
+    
+    def get_player_by_id(self):
+        player = self.players.all()
+        self.display.display_table("Player list", player)
+        choice = self.display.display_input("Right id of the player to modify: ")
+        player_data = self.players.get_player(int(choice))
+        print('player_data: ', player_data)

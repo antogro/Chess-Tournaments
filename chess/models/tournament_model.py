@@ -1,13 +1,9 @@
 from dataclasses import dataclass, field
 from typing import Any, List, Dict, Optional
+from chess.models.player_model import Player
+from .table_manager import TableManager
 from datetime import datetime
-from tinydb import TinyDB, Query
-from chess.models.player_model import Player, PlayerManager
-from chess.models.data_manager import ManageData
-
-
-DB_PATH_PLAYER = "_data/players.json"
-DB_PATH_TOURNAMENT = "_data/tournament.json"
+from .._database._database import db_tournament
 
 
 @dataclass
@@ -19,10 +15,13 @@ class TournamentModel:
     number_of_round: int
     current_round: int = 1
     _status: str = "In_progress"
-    matches: dict[str, Any] = field(default_factory=dict)
+    rounds: list = None
     doc_id: Optional[int] = None
     end_date: Optional[str] = None
     _players: List["TournamentPlayer"] = field(default_factory=list)
+
+    def __post_init(self):
+        self.rounds = []
 
     @property
     def to_dict(self) -> Dict[str, Any]:
@@ -35,21 +34,28 @@ class TournamentModel:
             "description": self.description,
             "number_of_round": self.number_of_round,
             "current_round": self.current_round,
-            "status": self.status,
-            "players": [player for player in self.players],
-            "matches": self.matches,
+            "status": self._status,
+            "players": [player.player.doc_id for player in self.players],
+            "rounds": [round.to_dict for round in self.rounds]
         }
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "TournamentModel":
-        players = data.get("players", [])
-        status = data.get("status")  # Extract status separately
-        tournament_data = {k: v for k, v in data.items() if k != "players" and k != "status"}
-        tournament = cls(**tournament_data)
-        tournament._status = status  # Set status after creating the object
-        tournament.players = players
-        return tournament
-
+        players = [Player.get_player(id=doc_id) for doc_id in data["players"]]
+        tournament_data = {
+        "doc_id": data.get("doc_id"),
+        "name": data.get("name"),
+        "place": data.get("place"),
+        "start_date": data.get("start_date"),
+        "end_date": data.get("end_date"),
+        "description": data.get("description"),
+        "number_of_round": data.get("number_of_round"),
+        "current_round": data.get("current_round"),
+        "_status": data.get("status"),
+        "_players": players,
+        "rounds": [round.from_dict(match) for match in data.get("rounds", [])]
+    }
+        return cls(**tournament_data)
 
     @property
     def players(self) -> List["TournamentPlayer"]:
@@ -94,120 +100,143 @@ class TournamentModel:
 
 
 class TournamentManager:
-
-    def __init__(self):
-        self.manage_data = ManageData()
-        self.db = TinyDB(DB_PATH_PLAYER)
-        self.db_tournament = self.db.table("tournament")
-
-
-    def save_tournament(self, tournament: TournamentModel) -> int:
-        all_tournament = self.manage_data.get_tournament_list()
-        self.highest_doc_id = (
-            max([doc.doc_id for doc in all_tournament]) if all_tournament else 0
-        )
-        self.doc_id = self.highest_doc_id + 1
+    table: TableManager = db_tournament
+    def id_tournament(self, tournament: TournamentModel) -> int:
+        all_tournament = self.table.load_all()
+        self.doc_id  = (max([doc.doc_id for doc in all_tournament]) if all_tournament else 0)+ 1
         tournament.doc_id = self.doc_id
-        tournament_dict = tournament.to_dict
-        return self.manage_data.save_tournament(tournament_dict)
+        return tournament
 
-    def get_all_tournament(self):
-        return self.manage_data.get_tournament_list()
+    def save(self, tournament: TournamentModel):
+        return self.table.save(tournament.to_dict)
 
-    def get_tournament(self, tournament_id: int) -> 'TournamentModel':
-        tournament_data = self.manage_data.load_tournament_data(tournament_id)
-        tournaments = tournament_data[0]
-        if tournaments is None:
+    def load_all_tournament(self):
+        return self.table.load_all()
+    
+    def update(self, data: TournamentModel, id):
+        return self.table.update(data.to_dict, id)
+
+    def load_tournament(self, tournament_id: int) -> 'TournamentModel':
+        tournament_data = self.table.load_from_id(tournament_id)
+        if tournament_data is None:
             raise ValueError(f"Tournament not found:{tournament_id}")
-        return TournamentModel.from_dict(tournaments)
+        return TournamentModel.from_dict(tournament_data)
          
 
-    def update(
-        self, tournament: TournamentModel) -> None:
-        current_round = tournament.current_round
-        round_key = f"round {current_round - 1}"
-        match = tournament.matches[round_key][0]
-        print('tournament.matches[round_key]: ', match)
-        for player in match:
-            Player.to_dict(player)
-        
+    def update_tournament(self, tournament: TournamentModel) -> None:
+        if not tournament.doc_id:
+            raise ValueError("Cannot update without doc_id!")
         try:
-            return self.manage_data.update_tournament(
-                tournament.doc_id, tournament.to_dict
-            )
+            tournament_dict = tournament.to_dict
+            id = tournament.doc_id
+            result = self.table.update(tournament_dict, id)
+            if result:
+                print("Success to update")
         except Exception as e:
-            print(f"fail update tournament: {e}")
+            raise ValueError(f"Error updating tournament: {e}")
 
     def get_last_tournament_id(self) -> int:
-        all_tournament = self.get_all_tournament()
+        all_tournament = self.load_all_tournament()
         if not all_tournament:
             raise ValueError("No tournament_found.")
         return max([doc.doc_id for doc in all_tournament])
 
 
 @dataclass
-class TournamentPlayer:
-    doc_id: int
+class TournamentPlayer():
+    player: Player
     score: float = 0
-    
 
+    def __repr__(self) -> str:
+        return f"{self.player}"
+        
+
+    @property
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "doc_id": self.doc_id,
+            "player": self.player.to_dict,
             "score": self.score,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-
         }
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "TournamentPlayer":
-        return cls(**data)
+        player = Player.from_dict(data["player"])
+        return cls(player = player, score=data['score'])
 
     def __str__(self) -> str:
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.player.first_name} {self.player.last_name}"
 
-class TournamentPlayerManager:
+    def add_player(self, players_number, tournament: TournamentModel) -> TournamentModel:
+        new_players = [int(s) for s in players_number.split()]
+        for new_player in new_players:
+            player_data = Player.get_player(id=int(new_player))
+            if player_data:
+                tournament_player = TournamentPlayer(player_data)
+                tournament.players.append(tournament_player)
 
-    def __init__(self):
-        self.db = TinyDB(DB_PATH_PLAYER)
-        self.db_player = self.db.table("players")
-        self.manage_data = ManageData()
-        self.player_manager = PlayerManager()
-        pass
-
-    def parsed_player_number(self, list_player_number):
-        player_number = [int(s) for s in list_player_number.split()]
-        return player_number
-    
-    def add_player(self, player, tournament):
-        new_players = self.parsed_player_number(player)
-        tournament.players.extend(new_players)
         return tournament
 
-    def extract_player_list(self, tournament):
-        """choose player for the tournament"""
-        try:
-            list_player_number = tournament['players']
-            player_list = []
-            for player_id in list_player_number:
-                player = self.manage_data.get_player(player_id)
-                if player:
-                    player_list.append(player)
 
-            player_object = []
-            for player_data in player_list:
-                player_data = Player(
-                    first_name=player_data["first_name"],
-                    last_name=player_data["last_name"],
-                    doc_id=player_data["doc_id"],
-                    score=player_data["score"],
-                    birth_date=player_data["birth_date"],
-                    chess_id=player_data["chess_id"],
-                )
-                player_object.append(player_data)
+@dataclass
+class Match:
+    """Class to manage a match between two players"""
 
-            return player_object
-        except KeyError:
-            raise ValueError("tournament_data must contain a 'player_list' key")
+    player1_score: TournamentPlayer
+    player2_score: TournamentPlayer
+    start_date: datetime = datetime.now()
+    end_date: Optional[datetime] = None
+
+    @property
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "player1_score": self.player1_score.to_dict,
+            "player2_score": self.player2_score.to_dict,
+            "start_date": self.start_date.isoformat(),
+            "end_date": self.end_date.isoformat() if self.end_date else None,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Match":
+        return cls(
+            player1_score=TournamentPlayer.from_dict(data["player1"]),
+            player2_score=TournamentPlayer.from_dict(data["player2"]),
+            start_date=datetime.fromisoformat(data["start_date"]),
+            end_date=(
+                datetime.fromisoformat(data["end_date"]) if data["end_date"] else None
+            )
+        )
+
+    def __repr__(self) -> str:
+        return (f"[[{self.player1_score.player.doc_id}, {self.player1_score.score}], [{self.player2_score.player.doc_id}, {self.player2_score.score}]]")
+
+
+@dataclass
+class RoundModels:
+    name: str
+    matches: List[Match]
+    start_date: str = str(datetime.today)
+    end_date: str = None
+    status: str = "In_progress"
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "start_date": self.start_date,
+            "end_date": self.end_date if self.end_date else None,
+            "status": self.status,
+            "matches": [match.to_dict for match in self.matches],
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "RoundModels":
+        matches = [Match.from_dict(match_data) for match_data in data["matches"]]
+        return cls(
+            name=data["name"],
+            start_date=data["start_date"],
+            end_date=data["end_date"],
+            status=data["status"],
+            matches=matches
+            )
+
+    
 

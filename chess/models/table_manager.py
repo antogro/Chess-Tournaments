@@ -1,37 +1,28 @@
-from typing import Any, List
-from rich.table import Table
-from rich.console import Console
-
+from typing import Union
+from tinydb import Query
 
 
 class TableManager:
-    def __init__(
-        self,
-    ):
-        pass
 
-    def display_table(self, title: str, items: list[dict], headers: list = None):
-        """display table data with ritch table"""
-        print('\n')
-        table = Table(title=title,
-                      padding=(0, 1),
-                      header_style="blue",
-                      title_style="purple",
-                      min_width=60
-                      )
+    def __init__(self, table):
+        self.table = table
 
-        if not headers:
-            try:
-                headers = list(items[0].keys())
-            except IndexError:
-                headers = []
-        for title in headers:
-            table.add_column(str(title), justify="center", style="cyan")
+    def save(self, data: dict) -> int:
+        id = self.table.insert(data)
+        return id
 
-        for item in items:
-            values = [str(item.get(header, '')) for header in headers]
-            table.add_row(*values)
-            
-        console = Console()
-        print("")
-        console.print(table)
+    def load_all(self) -> list:
+        """Renvoie la liste des tournois"""
+        return self.table.all()
+
+    def update(self, data: dict, doc_id: Union[list, int]) -> list[int]:
+        return self.table.update(data, Query().doc_id == doc_id)
+
+    def load_from_id(self, doc_id) -> dict:
+        return self.table.get(doc_id=doc_id)
+    
+    def insert_multiple(self, data: list[dict]) -> list[int]:
+        return self.table.insert(data)
+
+
+   

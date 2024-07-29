@@ -1,11 +1,5 @@
-from datetime import datetime
-from chess.models.tournament_model import TournamentModel, TournamentPlayer,TournamentManager, TournamentPlayerManager
-from chess.views.round_view import RoundView
-from chess.models.table_manager import TableManager
-from chess.models.pairing_manager import PairingManager
-from chess.models.data_manager import ManageData
-from chess.models.round_model import RoundModels, RoundManager, Match
-from chess.views.player_view import PlayerView
+
+
 
 
 class RoundControl:
@@ -33,28 +27,27 @@ class RoundControl:
 
 class RoundTournament:
     def __init__(self):
-        self.table_manager = TableManager()
+        self.table = TableManager(self)
 
         self.data_manager = ManageData()
-        self.round_manager = RoundManager(self.table_manager, self.data_manager)
+        self.round_manager = RoundManager(self.table, self.data_manager)
         self.round_model = RoundModels(self, self, self, self)
         self.round_view = RoundView()
-        self.pairing_manager = PairingManager(self.table_manager)
-        self.tournament_player_manager = TournamentPlayerManager()
+        self.pairing_manager = PairingManager(self.table)
+
         self.tournament_manager = TournamentManager()
-        self.player_view = PlayerView()
+
         self.tournament_model_player = TournamentPlayer(self, self)
 
     def manage_round(self, tournaments, tournament_id, player_data):
         """manage round"""
         TournamentModel.resume
-        self.table_manager.display_table("Tournament: ", [tournaments.to_dict])
+        self.table.display_table("Tournament: ", [tournaments.to_dict])
         
-        tournament, pairings = self.get_or_creat_pairing(tournaments, player_data)
+        tournament, pairings = self.get_or_create_pairing(tournaments, player_data)
         
         TournamentManager.update        
 
-        extract_data = self.round_manager.extract_and_display_round(pairings)
 
 
         if self.round_view.get_round_choice() == "1":
@@ -63,7 +56,7 @@ class RoundTournament:
             self.paused_round(tournament)
             return
 
-    def get_or_creat_pairing(self, tournament, players):
+    def get_or_create_pairing(self, tournament, players):
         """get or creat pairing"""
         current_round = tournament.current_round
 
@@ -128,34 +121,7 @@ class RoundTournament:
     #     ):
     #         print("match finish")
 
-    def manage_score(self, pairings, tournament_data):
- 
-
-        for pairing in pairings:
-            player1 = pairing.player1
-            player2 = pairing.player2
-       
-
-            result = self.round_view.get_match_result(player1, player2, tournament_data)
-            player1.score = float(player1.score)
-            player2.score = float(player2.score)
-
-            if result == "1":
-                player1.score += 1
-                self.round_view.display_match_result(player1)
-            elif result == "2":
-                player2 += 1
-                self.round_view.display_match_result(player2.first_name)
-            elif result == "0":
-                self.round_view.display_match_result(None, is_draw=True)
-                player1.score += 0.5
-                player2.score += 0.5
-            player1.score = str(player1.score)
-            player2.score = str(player2.score)
-
-            pairing.end_date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-
-        return pairings
+  
 
     def paused_round(self, tournament, pairings):
         tournaments = TournamentModel(**tournament)

@@ -24,7 +24,7 @@ class TournamentsView:
         return choice
 
     def get_info(self, message):
-        return input(message)
+        return input(f"{message}")
 
     def get_tournament_data(self):
         """
@@ -56,7 +56,7 @@ class TournamentsView:
             "number_of_round": self.number_of_round,
             "description": self.description,
             "current_round": 1,
-            "matches": {},
+            "rounds": {},
             
         }
 
@@ -93,3 +93,4 @@ class TournamentsView:
 
         return choice
 
+    
