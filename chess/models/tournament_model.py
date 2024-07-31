@@ -1,13 +1,42 @@
 from dataclasses import dataclass, field
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict, Optional, Union
 from chess.models.player_model import Player
 from .table_manager import TableManager
 from datetime import datetime
 from .._database._database import db_tournament
 
+@dataclass
+class RoundModels:
+    name: str
+    matches: List["Match"]
+    start_date: str 
+    end_date: Optional[str] = None
+    status: str = "In_progress"
+
+    @property
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "start_date": self.start_date,
+            "end_date": self.end_date,
+            "status": self.status,
+            "matches": [match.to_dict for match in self.matches],
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "RoundModels":
+        matches = [Match.from_dict(match_data) for match_data in data["matches"]]
+        return cls(
+            name=data["name"],
+            start_date=data["start_date"],
+            end_date=data["end_date"],
+            status=data["status"],
+            matches=matches
+            )
+
 
 @dataclass
-class TournamentModel:
+class TournamentModel(Player):
     name: str
     place: str
     start_date: str
@@ -15,13 +44,10 @@ class TournamentModel:
     number_of_round: int
     current_round: int = 1
     _status: str = "In_progress"
-    rounds: list = None
     doc_id: Optional[int] = None
     end_date: Optional[str] = None
+    rounds: List[RoundModels] = field(default_factory=list)
     _players: List["TournamentPlayer"] = field(default_factory=list)
-
-    def __post_init(self):
-        self.rounds = []
 
     @property
     def to_dict(self) -> Dict[str, Any]:
@@ -35,13 +61,13 @@ class TournamentModel:
             "number_of_round": self.number_of_round,
             "current_round": self.current_round,
             "status": self._status,
-            "players": [player.player.doc_id for player in self.players],
+            "players": [player.player.doc_id for player in self._players],
             "rounds": [round.to_dict for round in self.rounds]
         }
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "TournamentModel":
-        players = [Player.get_player(id=doc_id) for doc_id in data["players"]]
+        players = [TournamentPlayer(Player.get_player(doc_id)) for doc_id in data["players"]]
         tournament_data = {
         "doc_id": data.get("doc_id"),
         "name": data.get("name"),
@@ -53,7 +79,7 @@ class TournamentModel:
         "current_round": data.get("current_round"),
         "_status": data.get("status"),
         "_players": players,
-        "rounds": [round.from_dict(match) for match in data.get("rounds", [])]
+        "rounds": [RoundModels.from_dict(match) for match in data.get("rounds", [])]
     }
         return cls(**tournament_data)
 
@@ -90,7 +116,6 @@ class TournamentModel:
 
     def resume(self):
         self.set_status = "In_progress"
-        
 
     def paused(self):
         self.set_status = "Paused"
@@ -113,22 +138,27 @@ class TournamentManager:
     def load_all_tournament(self):
         return self.table.load_all()
     
-    def update(self, data: TournamentModel, id):
-        return self.table.update(data.to_dict, id)
+    def update(self, data, id):
+        
+        return self.table.update(data, id)
 
     def load_tournament(self, tournament_id: int) -> 'TournamentModel':
         tournament_data = self.table.load_from_id(tournament_id)
         if tournament_data is None:
             raise ValueError(f"Tournament not found:{tournament_id}")
         return TournamentModel.from_dict(tournament_data)
-         
 
     def update_tournament(self, tournament: TournamentModel) -> None:
         if not tournament.doc_id:
             raise ValueError("Cannot update without doc_id!")
         try:
             tournament_dict = tournament.to_dict
+            print('tournament_dict: ', tournament_dict)
             id = tournament.doc_id
+            for key, value in tournament_dict.items():
+                if isinstance(value, datetime):
+                    print(f"Converting {key} to string: {value.isoformat()}")
+                    tournament_dict[key] = value.isoformat()
             result = self.table.update(tournament_dict, id)
             if result:
                 print("Success to update")
@@ -141,27 +171,18 @@ class TournamentManager:
             raise ValueError("No tournament_found.")
         return max([doc.doc_id for doc in all_tournament])
 
-
 @dataclass
 class TournamentPlayer():
     player: Player
     score: float = 0
 
-    def __repr__(self) -> str:
-        return f"{self.player}"
-        
-
     @property
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            "player": self.player.to_dict,
-            "score": self.score,
-        }
+        return {self.player}
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "TournamentPlayer":
-        player = Player.from_dict(data["player"])
-        return cls(player = player, score=data['score'])
+        return cls(data[0])
 
     def __str__(self) -> str:
         return f"{self.player.first_name} {self.player.last_name}"
@@ -176,6 +197,29 @@ class TournamentPlayer():
 
         return tournament
 
+    def update_player_scores(self, tournament: TournamentModel):
+        for round in tournament.rounds:
+            for match in round.matches:
+                if match.player1_score.score == 1.0:
+                    for player in tournament.players:
+                        if player.player.doc_id == match.player1_score.player.doc_id:
+                            player.score += 1
+                            break
+                elif match.player2_score.score == 1.0:
+                    for player in tournament.players:
+                        if player.player.doc_id == match.player2_score.player.doc_id:
+                            player.score += 1
+                            break
+                elif match.player1_score.score == 0.5 and match.player2_score.score == 0.5:
+                    for player in tournament.players:
+                        if player.player.doc_id == match.player1_score.player.doc_id:
+                            player.score += 0.5
+                            break
+                    for player in tournament.players:
+                        if player.player.doc_id == match.player2_score.player.doc_id:
+                            player.score += 0.5
+                            break
+
 
 @dataclass
 class Match:
@@ -183,60 +227,41 @@ class Match:
 
     player1_score: TournamentPlayer
     player2_score: TournamentPlayer
-    start_date: datetime = datetime.now()
+    start_date: str = field(default_factory=lambda: datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
     end_date: Optional[datetime] = None
 
-    @property
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "player1_score": self.player1_score.to_dict,
-            "player2_score": self.player2_score.to_dict,
-            "start_date": self.start_date.isoformat(),
-            "end_date": self.end_date.isoformat() if self.end_date else None,
-        }
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Match":
-        return cls(
-            player1_score=TournamentPlayer.from_dict(data["player1"]),
-            player2_score=TournamentPlayer.from_dict(data["player2"]),
-            start_date=datetime.fromisoformat(data["start_date"]),
-            end_date=(
-                datetime.fromisoformat(data["end_date"]) if data["end_date"] else None
-            )
-        )
-
     def __repr__(self) -> str:
-        return (f"[[{self.player1_score.player.doc_id}, {self.player1_score.score}], [{self.player2_score.player.doc_id}, {self.player2_score.score}]]")
+        return (f"[[{self.player1_score.player.doc_id}, {self.player1_score.player.score}], [{self.player2_score.player.doc_id}, {self.player2_score.player.score}]]")
 
+    @property
+    def to_dict(self):
+        start_date = self.start_date.strftime("%d-%m-%Y %H:%M:%S") if isinstance(self.start_date, datetime) else self.start_date
+        end_date = self.end_date.strftime("%d-%m-%Y %H:%M:%S") if isinstance(self.end_date, datetime) else self.end_date
 
-@dataclass
-class RoundModels:
-    name: str
-    matches: List[Match]
-    start_date: str = str(datetime.today)
-    end_date: str = None
-    status: str = "In_progress"
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "name": self.name,
-            "start_date": self.start_date,
-            "end_date": self.end_date if self.end_date else None,
-            "status": self.status,
-            "matches": [match.to_dict for match in self.matches],
-        }
+        return [
+            [self.player1_score.player.doc_id, self.player1_score.score],
+            [self.player2_score.player.doc_id, self.player2_score.score],
+            start_date,
+            end_date
+            ]
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "RoundModels":
-        matches = [Match.from_dict(match_data) for match_data in data["matches"]]
-        return cls(
-            name=data["name"],
-            start_date=data["start_date"],
-            end_date=data["end_date"],
-            status=data["status"],
-            matches=matches
-            )
+    def from_dict(cls, data: List[List[Union[int, float]]]) -> "Match":
+        player1 = TournamentPlayer(Player.get_player(data[0][0]), score=data[0][1])
+        player2 = TournamentPlayer(Player.get_player(data[1][0]), score=data[1][1])
+        start_date = datetime.strptime(data[2], "%d-%m-%Y %H:%M:%S")  
+        end_date = datetime.strptime(data[3], "%d-%m-%Y %H:%M:%S") if data[3] else None 
+        return cls(player1_score=player1, player2_score=player2, start_date=start_date, end_date=end_date)
+
+    def format_data(self, data: "Match"):
+        return [[
+             data.player1_score.player, data.player1_score.score],
+             [data.player2_score.player, data.player2_score.score], 
+             data.start_date, data.end_date
+        ]
+
+
+
 
     
 

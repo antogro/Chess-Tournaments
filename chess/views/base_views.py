@@ -3,8 +3,6 @@ from rich.console import Console
 
 
 class Display:
-    def __init__(self):
-        pass
 
     def display_table(self, title: str, items: list[dict], headers: list = None):
         """display table data with ritch table"""
@@ -49,3 +47,5 @@ class Display:
 
     def display_message(self, message):
         print(f"\n{message}")
+
+    

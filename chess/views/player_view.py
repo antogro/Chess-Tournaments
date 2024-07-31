@@ -1,4 +1,4 @@
-
+from datetime import datetime
 
 class PlayerView:
 
@@ -7,9 +7,8 @@ class PlayerView:
         print("2. Players list")
         print("3. Select and modify player")
         print("Q. Exit")
-        menu_player = input("Right your choose number: ")
 
-        return menu_player
+        return input("Right your choose number: ")
 
     def chess_id_construc(self):
         """construc the chess id code"""
@@ -37,12 +36,27 @@ class PlayerView:
                 continue
 
             return f"{chess_id_letter.upper()}{chess_id_number}"
+    
+    def birth_date_contruc(self):
+        while True:
+            birth_date = input("Birth date (MM/DD/YYYY): ")
+            try:
+                datetime.strptime(birth_date, "%d/%m/%Y")
+                return birth_date
+            except ValueError:
+                print("Invalid date format. Please use DD/MM/YYYY.")
 
     def get_player_data(self):
         print("\n--- Add a new player ---")
-        self.first_name = input("First Name: ")
-        self.last_name = input("Last Name: ")
-        self.birth_date = input("birth date (DD/MM/YYYY) : ")
+        while True:
+            self.first_name = input("First Name: ")
+            self.last_name = input("Last Name: ")
+            if self.first_name or self.last_name:
+                break
+            else:
+                print("Please enter first name and last name.")
+                
+        self.birth_date = self.birth_date_contruc()
         self.chess_id = self.chess_id_construc()
         self.score = 0
 

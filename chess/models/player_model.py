@@ -4,7 +4,6 @@ from .table_manager import TableManager
 from .._database._database import db_player
 
 
-
 class Player:
     table: TableManager = db_player
 
@@ -23,12 +22,12 @@ class Player:
         self.doc_id = doc_id
         self.score = score
 
+    def __repr__(self) -> str:
+        return f"{self.doc_id}"
+
     @property
     def full_name(self):
         return f"{self.last_name} {self.first_name}"
-
-    def __repr__(self) -> str:
-        return f"{self.doc_id}"
 
     @property
     def to_dict(self):
@@ -64,7 +63,5 @@ class Player:
         
     @classmethod
     def get_player(cls, id: int) -> 'Player':
-        player = cls.table.load_from_id(id)
-
-        
+        player = cls.table.load_from_id(id)        
         return cls.from_dict(player) 

@@ -4,40 +4,35 @@ from datetime import datetime
 class TournamentsView:
     """Show the information of a tournament"""
 
-    def __init__(self):
-        pass
-
     def display_tournament_menu(self):
         """Display the menu of a tournament"""
         print("\n -------Tournament menu-------")
         print("1. Creat a new tournament")
         print("2. Continue the last tournament")
-        print("3. creat current tournament report")
+        print("3. select and continue tournament")
         print("4. select and report a tournament")
         print("5. Show the list of tournament")
         print("6. Back to main menu")
         print("Q. Exit")
         print("-------------------------------")
 
-        choice = input("Do your choice: ")
-
-        return choice
-
-    def get_info(self, message):
-        return input(f"{message}")
+        return input("Do your choice: ")
 
     def get_tournament_data(self):
         """
         Get  information for the tournament
         """
-        self.name = input("Right the name of the tournament: ")
-        self.place = input("Right the place of the tournament: ")
-        self.description = input("Right the description of the tournament: ")
+        while True:
+            self.name = input("Right the name of the tournament: ")
+            self.place = input("Right the place of the tournament: ")
+            if self.name or self.place:
+                break
+            else:
+                print("Please fill in all the fields")
 
         while True:
-            tournament_start_date = input(
-                "Right the date of the tournament dd/mm/yyyy: "
-            )
+            tournament_start_date = input("Right the date of the tournament dd/mm/yyyy: ")
+
             if not tournament_start_date:
                 start_date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
                 break
@@ -47,6 +42,7 @@ class TournamentsView:
             except ValueError:
                 print("Incorrect data format, should be dd/mm/yyyy")
 
+        self.description = input("Right the description of the tournament: ")
         self.number_of_round = self.round_tournament()
 
         tournament_data = {
@@ -56,10 +52,8 @@ class TournamentsView:
             "number_of_round": self.number_of_round,
             "description": self.description,
             "current_round": 1,
-            "rounds": {},
-            
+            "rounds": [],   
         }
-
         return tournament_data
 
     def round_tournament(self):
@@ -76,11 +70,8 @@ class TournamentsView:
 
     def tournament_choose_player(self):
         """fonction to choose a player for a tournament"""
-
         print("\n ---- choose player by a list----\n")
-
         choice = input("Do your choice (right number separate by a space): \n")
-
         return choice
 
     def tournament_score_menu(self):
@@ -91,6 +82,13 @@ class TournamentsView:
         print("Q - Exit players selection")
         choice = input("Do your choice: ")
 
+        return choice
+
+    def select_repport_tournament_by_classment(self):
+        """fonction to choose how the players will be repport"""
+        print("1. If you want to repport by alphabetic order")
+        print("2. If you want to repport by score")
+        choice = input("do your choice:")
         return choice
 
     
