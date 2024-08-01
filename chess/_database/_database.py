@@ -1,5 +1,4 @@
 from tinydb import TinyDB
-
 from ..models.table_manager import TableManager
 
 

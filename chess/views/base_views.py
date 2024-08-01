@@ -4,7 +4,7 @@ from rich.console import Console
 
 class Display:
 
-    def display_table(self, title: str, items: list[dict], headers: list = None):
+    def display_table(self, title: str, items: list[dict], headers: list = None, exclude_headers = None):
         """display table data with ritch table"""
         print('\n')
         
@@ -20,6 +20,8 @@ class Display:
                 headers = list(items[0].keys())
             except IndexError:
                 headers = []
+        if exclude_headers:
+            headers = [header for header in headers if header not in exclude_headers]
         for title in headers:
             table.add_column(str(title), justify="center", style="cyan")
 
@@ -37,7 +39,7 @@ class Display:
         return input("Do your choice: ")
 
     def display_error_input(self):
-        """display error message"""
+        """display error message input"""
         print('\n')
         print("Error: Invalid input")
         print('\n')

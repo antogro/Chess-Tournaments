@@ -19,9 +19,8 @@ class TournamentsView:
         return input("Do your choice: ")
 
     def get_tournament_data(self):
-        """
-        Get  information for the tournament
-        """
+        """Get  information for the tournament"""
+
         while True:
             self.name = input("Right the name of the tournament: ")
             self.place = input("Right the place of the tournament: ")
@@ -31,7 +30,7 @@ class TournamentsView:
                 print("Please fill in all the fields")
 
         while True:
-            tournament_start_date = input("Right the date of the tournament dd/mm/yyyy: ")
+            tournament_start_date = input("Right the date of the tournament dd/mm/yyyy (Default: Current Date): ")
 
             if not tournament_start_date:
                 start_date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")

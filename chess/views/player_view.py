@@ -3,6 +3,7 @@ from datetime import datetime
 class PlayerView:
 
     def display_player_menu(self):
+        """Display creat player, player list, or modify player"""
         print("1. Create a new player")
         print("2. Players list")
         print("3. Select and modify player")
@@ -38,6 +39,7 @@ class PlayerView:
             return f"{chess_id_letter.upper()}{chess_id_number}"
     
     def birth_date_contruc(self):
+        """construc the birth date code"""
         while True:
             birth_date = input("Birth date (MM/DD/YYYY): ")
             try:
@@ -47,6 +49,7 @@ class PlayerView:
                 print("Invalid date format. Please use DD/MM/YYYY.")
 
     def get_player_data(self):
+        """get all the information to save a player in the database"""
         print("\n--- Add a new player ---")
         while True:
             self.first_name = input("First Name: ")
@@ -70,6 +73,7 @@ class PlayerView:
         return player_data
 
     def display_new_player(self, player_add):
+        """display the name of the new player"""
         print(f"\n ---- New player created: {player_add.first_name} ----\n")
 
     

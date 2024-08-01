@@ -1,6 +1,7 @@
 class RoundView:
 
     def manage_round_view(self):
+        """select to stop or to start the round"""
         print("Whould you want to start the round ?")
         print("Please select an option:")
         print("1. Start the round")
@@ -10,20 +11,21 @@ class RoundView:
         return choice
 
     def get_round_choice(self):
+        """Select to stop or to continue to write result """
         print("1. If you want to start to write result")
         print("2. if you want to paused the round.")
         return input("\n Do your choice: ")
 
     def display_pairing(self, pairings):
-            
-            print(f"\n --- Player 1: {pairings.player.full_name} --- ")
-            print("VS")
-            print(
-                f"--- Player 2: {pairings.player.full_name} --- \n"
-            )
+        """Display pairing while the match is start"""
+        print(f"\n --- Player 1: {pairings.player.full_name} --- ")
+        print("VS")
+        print(
+            f"--- Player 2: {pairings.player.full_name} --- \n"
+        )
 
     def get_match_result(self, pairing, name):
-        """Fonction to get the result of one match between 2 players"""
+        """Get the result of one match between 2 players"""
         print(
             f"\n -- {name}: Player 1: {pairing.player1_score.player.full_name} -- "
         )
@@ -41,7 +43,7 @@ class RoundView:
                 print("\n Invalid input, must be 0, 1 or 2. please try again! \n")
 
     def display_match_result(self, winner_name, is_draw=False):
-        """Fonction to display the result of one match between 2 players"""
+        """Display the result of one match between 2 players"""
         if is_draw:
             print("\n --- Round is draw --- \n")
         else:
