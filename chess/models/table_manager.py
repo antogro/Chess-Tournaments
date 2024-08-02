@@ -20,9 +20,6 @@ class TableManager:
 
     def load_from_id(self, doc_id) -> dict:
         return self.table.get(doc_id=doc_id)
-    
+
     def insert_multiple(self, data: list[dict]) -> list[int]:
         return self.table.insert(data)
-
-
-   

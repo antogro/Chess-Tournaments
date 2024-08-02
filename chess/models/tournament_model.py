@@ -1,22 +1,24 @@
 from dataclasses import dataclass, field
 import builtins
-from typing import Any, List, Dict, Optional, Union
+from typing import Any, Optional
 from chess.models.player_model import Player
 from .table_manager import TableManager
 from datetime import datetime
 from .._database._database import db_tournament
 
+
 @dataclass
 class RoundModels:
     """Class to manage the rounds of a tournament"""
+
     name: str
-    matches: List["Match"]
-    start_date: str 
+    matches: list["Match"]
+    start_date: str
     end_date: Optional[str] = None
     status: str = "In_progress"
 
     @property
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the object RoundModels to a dictionary"""
         return {
             "name": self.name,
@@ -27,16 +29,17 @@ class RoundModels:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "RoundModels":
+    def from_dict(cls, data: dict[str, Any]) -> "RoundModels":
         """Convert a dictionary to a RoundModels object"""
-        matches = [Match.from_dict(match_data) for match_data in data["matches"]]
+        matches = [Match.from_dict(match_data)
+                   for match_data in data["matches"]]
         return cls(
             name=data["name"],
             start_date=data["start_date"],
             end_date=data["end_date"],
             status=data["status"],
-            matches=matches
-            )
+            matches=matches,
+        )
 
 
 @dataclass
@@ -52,11 +55,11 @@ class TournamentModel(Player):
     _status: str = "In_progress"
     doc_id: Optional[int] = None
     end_date: Optional[str] = None
-    rounds: List[RoundModels] = field(default_factory=list)
-    _players: List["TournamentPlayer"] = field(default_factory=list)
+    rounds: list[RoundModels] = field(default_factory=list)
+    _players: list["Player"] = field(default_factory=list)
 
     @property
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the object TournamentModel to a dictionary"""
         return {
             "doc_id": self.doc_id,
@@ -68,36 +71,39 @@ class TournamentModel(Player):
             "number_of_round": self.number_of_round,
             "current_round": self.current_round,
             "status": self._status,
-            "players": [player.player.doc_id for player in self._players],
-            "rounds": [round.to_dict for round in self.rounds]
+            "players": [player.doc_id for player in self._players],
+            "rounds": [round.to_dict for round in self.rounds],
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "TournamentModel":
+    def from_dict(cls, data: dict[str, Any]) -> "TournamentModel":
         """Convert a dictionary to a TournamentModel object"""
-        players = [TournamentPlayer(Player.get_player(doc_id)) for doc_id in data["players"]]
+        players = [(Player.get_player(doc_id))
+                   for doc_id in data["players"]]
+        rounds = [RoundModels.from_dict(match)
+                  for match in data.get("rounds", [])]
         tournament_data = {
-        "doc_id": data.get("doc_id"),
-        "name": data.get("name"),
-        "place": data.get("place"),
-        "start_date": data.get("start_date"),
-        "end_date": data.get("end_date"),
-        "description": data.get("description"),
-        "number_of_round": data.get("number_of_round"),
-        "current_round": data.get("current_round"),
-        "_status": data.get("status"),
-        "_players": players,
-        "rounds": [RoundModels.from_dict(match) for match in data.get("rounds", [])]
-    }
+            "doc_id": data.get("doc_id"),
+            "name": data.get("name"),
+            "place": data.get("place"),
+            "start_date": data.get("start_date"),
+            "end_date": data.get("end_date"),
+            "description": data.get("description"),
+            "number_of_round": data.get("number_of_round"),
+            "current_round": data.get("current_round"),
+            "_status": data.get("status"),
+            "_players": players,
+            "rounds": rounds,
+        }
         return cls(**tournament_data)
 
     @property
-    def players(self) -> List["TournamentPlayer"]:
+    def players(self) -> list[Player]:
         """Get the list of players in the tournament"""
         return self._players
 
     @players.setter
-    def players(self, value: List["TournamentPlayer"]):
+    def players(self, value: list[Player]):
         """Set the list of players in the tournament"""
         self._players = value
 
@@ -114,7 +120,7 @@ class TournamentModel(Player):
         else:
             raise ValueError("Invalid status")
 
-    def add_player(self, player: "TournamentPlayer"):
+    def add_player(self, player: Player):
         """Add a player to the tournament"""
         if player not in self.players:
             self.players.append(player)
@@ -136,12 +142,15 @@ class TournamentModel(Player):
 
 class TournamentManager:
     """Class to manage the information of a tournament"""
+
     table: TableManager = db_tournament
 
     def id_tournament(self, tournament: TournamentModel) -> TournamentModel:
         """Get and set the id of the tournament"""
         all_tournament = self.table.load_all()
-        self.doc_id  = (max([doc.doc_id for doc in all_tournament]) if all_tournament else 0)+ 1
+        self.doc_id = (
+            max([doc.doc_id for doc in all_tournament])
+            if all_tournament else 0) + 1
         tournament.doc_id = self.doc_id
         return tournament
 
@@ -149,10 +158,10 @@ class TournamentManager:
         """Save the tournament in the database"""
         return self.table.save(tournament.to_dict)
 
-    def load_all_tournament(self) -> List[TournamentModel]:
+    def load_all_tournament(self) -> list[dict]:
         """Load all the tournament from the database"""
         return self.table.load_all()
-    
+
     def update(self, data, id) -> int:
         """Update the tournament in the database"""
         return self.table.update(data, id)
@@ -164,7 +173,7 @@ class TournamentManager:
             raise ValueError(f"Tournament not found:{tournament_id}")
         return TournamentModel.from_dict(tournament_data)
 
-    def update_tournament(self, tournament: TournamentModel) -> None:
+    def update_tournament(self, tournament: TournamentModel):
         """Update the tournament in the database"""
         if not tournament.doc_id:
             raise ValueError("Cannot update without doc_id!")
@@ -173,11 +182,10 @@ class TournamentManager:
             id = tournament.doc_id
             for key, value in tournament_dict.items():
                 if isinstance(value, datetime):
-                    print(f"Converting {key} to string: {value.isoformat()}")
                     tournament_dict[key] = value.isoformat()
             result = self.table.update(tournament_dict, id)
             if result:
-                print("Success to update")
+                return ("\nSuccess to update")
         except Exception as e:
             raise ValueError(f"Error updating tournament: {e}")
 
@@ -186,35 +194,36 @@ class TournamentManager:
         all_tournament = self.load_all_tournament()
         if not all_tournament:
             raise ValueError("No tournament_found.")
-        return max([doc.doc_id for doc in all_tournament])
+        return max([doc["doc_id"] for doc in all_tournament])
+
 
 @dataclass
-class TournamentPlayer():
+class TournamentPlayer:
     player: Player
     score: float = 0
 
     @property
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> Any:
         """Convert the TournamentPlayer object to a dictionary"""
-        return {self.player}
+        return {self.player.doc_id, self.score}
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "TournamentPlayer":
+    def from_dict(cls, data: dict) -> "TournamentPlayer":
         """Convert a dictionary to a TournamentPlayer object"""
         return cls(data[0])
 
     def __str__(self) -> str:
         return f"{self.player.first_name} {self.player.last_name}"
 
-    def add_player(self, players_number, tournament: TournamentModel) -> TournamentModel:
+    def add_player(
+        self, players_number, tournament: TournamentModel
+    ) -> TournamentModel:
         """Add and set player object to the tournament"""
-        new_players = [int(s) for s in players_numbers.split()]
+        new_players = [int(s) for s in players_number.split()]
         for new_player in new_players:
-            player_data = Player.get_player(id=int(new_player))
-            if player_data:
-                tournament_player = TournamentPlayer(player_data)
-                tournament.players.append(tournament_player)
-
+            self.player_data = Player.get_player(id=int(new_player))
+            if self.player_data:
+                tournament.players.append(self.player_data)
         return tournament
 
     def update_player_scores(self, tournament: TournamentModel):
@@ -222,10 +231,9 @@ class TournamentPlayer():
         for player in tournament.players:
             player.score = 0
 
-        # Create a dictionary for faster player lookup
-        player_dict = {player.player.doc_id: player for player in tournament.players}
+        player_dict = {player.doc_id: player for player in tournament.players}
 
-        for tournament_round in tournament.rounds:  # Renamed 'round' to 'tournament_round'
+        for tournament_round in tournament.rounds:
             for match in tournament_round.matches:
                 player1 = player_dict.get(match.player1_score.player.doc_id)
                 player2 = player_dict.get(match.player2_score.player.doc_id)
@@ -234,7 +242,6 @@ class TournamentPlayer():
                     player1.score += match.player1_score.score
                     player2.score += match.player2_score.score
 
-        # Round scores to 1 decimal place using the built-in round function
         for player in tournament.players:
             player.score = builtins.round(player.score, 1)
 
@@ -245,44 +252,63 @@ class Match:
 
     player1_score: TournamentPlayer
     player2_score: TournamentPlayer
-    start_date: str = field(default_factory=lambda: datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
+    start_date: str = field(
+        default_factory=lambda: datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    )
     end_date: Optional[datetime] = None
 
     def __repr__(self) -> str:
-        return (f"[[{self.player1_score.player.doc_id}, {self.player1_score.player.score}], [{self.player2_score.player.doc_id}, {self.player2_score.player.score}]]")
+        return (
+            f"[[{self.player1_score.player.doc_id}, "
+            f"{self.player1_score.score}], "
+            f"[{self.player2_score.player.doc_id}, "
+            f"{self.player2_score.score}]]"
+        )
 
     @property
-    def to_dict(self):
+    def to_dict(self) -> Any:
         """Convert a Match object to a dictionary"""
-        start_date = self.start_date.strftime("%d-%m-%Y %H:%M:%S") if isinstance(self.start_date, datetime) else self.start_date
-        end_date = self.end_date.strftime("%d-%m-%Y %H:%M:%S") if isinstance(self.end_date, datetime) else self.end_date
+        start_date = (
+            self.start_date.strftime("%d-%m-%Y %H:%M:%S")
+            if isinstance(self.start_date, datetime)
+            else self.start_date
+        )
+        end_date = (
+            self.end_date.strftime("%d-%m-%Y %H:%M:%S")
+            if isinstance(self.end_date, datetime)
+            else self.end_date
+        )
 
         return [
             [self.player1_score.player.doc_id, self.player1_score.score],
             [self.player2_score.player.doc_id, self.player2_score.score],
             start_date,
-            end_date
-            ]
+            end_date,
+        ]
 
     @classmethod
-    def from_dict(cls, data: List[List[Union[int, float]]]) -> "Match":
+    def from_dict(cls, data: list) -> "Match":
         """Convert a dictionary to a Match object"""
-        player1 = TournamentPlayer(Player.get_player(data[0][0]), score=data[0][1])
-        player2 = TournamentPlayer(Player.get_player(data[1][0]), score=data[1][1])
-        start_date = datetime.strptime(data[2], "%d-%m-%Y %H:%M:%S")  
-        end_date = datetime.strptime(data[3], "%d-%m-%Y %H:%M:%S") if data[3] else None 
-        return cls(player1_score=player1, player2_score=player2, start_date=start_date, end_date=end_date)
+        player1 = TournamentPlayer(Player.get_player(data[0][0]),
+                                   score=data[0][1])
+        player2 = TournamentPlayer(Player.get_player(data[1][0]),
+                                   score=data[1][1])
+        start_date = datetime.strptime(data[2],
+                                       "%d-%m-%Y %H:%M:%S")
+        end_date = datetime.strptime(data[3],
+                                     "%d-%m-%Y %H:%M:%S") if data[3] else None
+        return cls(
+            player1_score=player1,
+            player2_score=player2,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
     def format_data(self, data: "Match"):
         """Format data for a match"""
-        return [[
-             data.player1_score.player, data.player1_score.score],
-             [data.player2_score.player, data.player2_score.score], 
-             data.start_date, data.end_date
+        return [
+            [data.player1_score.player, data.player1_score.score],
+            [data.player2_score.player, data.player2_score.score],
+            data.start_date,
+            data.end_date,
         ]
-
-
-
-
-    
-

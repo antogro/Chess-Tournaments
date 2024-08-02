@@ -1,12 +1,12 @@
 from datetime import datetime
 
+
 class PlayerView:
 
     def display_player_menu(self):
-        """Display creat player, player list, or modify player"""
+        """Display create player, player list, or modify player"""
         print("1. Create a new player")
         print("2. Players list")
-        print("3. Select and modify player")
         print("Q. Exit")
 
         return input("Right your choose number: ")
@@ -37,7 +37,7 @@ class PlayerView:
                 continue
 
             return f"{chess_id_letter.upper()}{chess_id_number}"
-    
+
     def birth_date_contruc(self):
         """construc the birth date code"""
         while True:
@@ -58,7 +58,7 @@ class PlayerView:
                 break
             else:
                 print("Please enter first name and last name.")
-                
+
         self.birth_date = self.birth_date_contruc()
         self.chess_id = self.chess_id_construc()
         self.score = 0
@@ -75,5 +75,3 @@ class PlayerView:
     def display_new_player(self, player_add):
         """display the name of the new player"""
         print(f"\n ---- New player created: {player_add.first_name} ----\n")
-
-    

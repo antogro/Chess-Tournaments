@@ -11,7 +11,7 @@ class RoundView:
         return choice
 
     def get_round_choice(self):
-        """Select to stop or to continue to write result """
+        """Select to stop or to continue to write result"""
         print("1. If you want to start to write result")
         print("2. if you want to paused the round.")
         return input("\n Do your choice: ")
@@ -20,19 +20,13 @@ class RoundView:
         """Display pairing while the match is start"""
         print(f"\n --- Player 1: {pairings.player.full_name} --- ")
         print("VS")
-        print(
-            f"--- Player 2: {pairings.player.full_name} --- \n"
-        )
+        print(f"--- Player 2: {pairings.player.full_name} --- \n")
 
     def get_match_result(self, pairing, name):
         """Get the result of one match between 2 players"""
-        print(
-            f"\n -- {name}: Player 1: {pairing.player1_score.player.full_name} -- "
-        )
+        print(f"\n -- {name}: Player 1: {pairing.player1_score.player.full_name} -- ")
         print("VS")
-        print(
-            f" -- {name}: Player 2: {pairing.player2_score.player.full_name} -- \n"
-        )
+        print(f" -- {name}: Player 2: {pairing.player2_score.player.full_name} -- \n")
         while True:
             result = input(
                 "write the number of the result (Player1 win = 1, Player2 win = 2, Draw = 0): "
