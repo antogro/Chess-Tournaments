@@ -72,7 +72,8 @@ class TournamentModel(Player):
             "current_round": self.current_round,
             "status": self._status,
             "players": [player.doc_id for player in self._players],
-            "rounds": [round.to_dict for round in self.rounds],
+            "rounds": [round.to_dict
+                       for round in self.rounds if round is not None],
         }
 
     @classmethod
@@ -180,9 +181,6 @@ class TournamentManager:
         try:
             tournament_dict = tournament.to_dict
             id = tournament.doc_id
-            for key, value in tournament_dict.items():
-                if isinstance(value, datetime):
-                    tournament_dict[key] = value.isoformat()
             result = self.table.update(tournament_dict, id)
             if result:
                 return ("\nSuccess to update")

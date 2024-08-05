@@ -1,4 +1,3 @@
-from typing import Union
 from tinydb import Query
 
 
@@ -15,7 +14,7 @@ class TableManager:
         """Renvoie la liste des tournois"""
         return self.table.all()
 
-    def update(self, data: dict, doc_id: Union[list, int]) -> int:
+    def update(self, data: dict, doc_id: list | int) -> int:
         return self.table.update(data, Query().doc_id == doc_id)
 
     def load_from_id(self, doc_id) -> dict:

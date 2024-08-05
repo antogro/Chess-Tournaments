@@ -6,7 +6,7 @@ class TournamentsView:
     """Show the information of a tournament"""
 
     def clear_screen(self):
-        """Reset l'affichage"""
+        """Reset console"""
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def display_tournament_menu(self):
@@ -17,7 +17,6 @@ class TournamentsView:
         print("3. select and continue tournament")
         print("4. select and report a tournament")
         print("5. Show the list of tournament")
-        print("6. Back to main menu")
         print("Q. Exit")
         print("-------------------------------")
 
@@ -36,7 +35,8 @@ class TournamentsView:
 
         while True:
             tournament_start_date = input(
-                "Right the date of the tournament dd/mm/yyyy (Default: Current Date): "
+                "Right the date of the tournament "
+                "dd/mm/yyyy (Default: Current Date): "
             )
 
             if not tournament_start_date:
