@@ -138,7 +138,9 @@ class ControlTournament:
             else:
                 choice = self.round_view.manage_round_view()
                 if choice != "1":
-                    self.paused_tournament(tournament)
+                    tournament.paused()
+                    self.view.display_message(
+                        self.tournament_manager.update_tournament(tournament))
                     break
 
                 tournament.resume()
@@ -147,6 +149,7 @@ class ControlTournament:
 
                 try:
                     rounds = tournament.rounds[tournament.current_round - 1]
+
                 except IndexError:
                     pass
 
@@ -165,38 +168,29 @@ class ControlTournament:
                 round_choice = self.manage_score(rounds)
 
                 if "Paused" == round_choice.status:
+
                     self.paused_tournament(tournament, rounds)
+
                     break
 
                 tournament.current_round += 1
-                tournament.rounds.append(round_choice)
 
                 round_continue = self.manage_update_tournament(tournament,
                                                                round_choice)
 
-    def paused_tournament(self, tournament: TournamentModel,
-                          rounds: RoundModels = None):
-        """Manage the tournament when it is paused."""
-        tournament.paused()
-        if tournament.rounds:
-            tournament.rounds.append(rounds)
-        self.view.display_message(
-            self.tournament_manager.update_tournament(tournament))
-
     def manage_update_tournament(self, tournament: TournamentModel,
                                  rounds: RoundModels) -> bool:
         """Manage the update of the tournament after a round."""
-        tournament.rounds.append(rounds)
-
         if tournament.current_round > int(tournament.number_of_round):
             self.view.display_message(
                 "Tournament has reached the maximum number of rounds"
             )
             tournament.finished()
+            print('\ntournament: ', tournament)
+            print('\ntournament: ', tournament.rounds)
             tournament.end_date = datetime.now().strftime(
                 "%d-%m-%Y %H:%M:%S")
-            self.view.display_message(
-                self.tournament_manager.update_tournament(tournament))
+            self.manage_update_round(tournament, rounds)
             self.view.display_message(
                 f"The tournament: {tournament.name} is finished"
             )
@@ -204,17 +198,7 @@ class ControlTournament:
             return False
 
         else:
-            existing_round = next((r for r in tournament.rounds if r.name ==
-                                   f"Round {tournament.current_round-1}"), None)
-
-            if existing_round is not None:
-                tournament.rounds.remove(existing_round)
-                self.view.display_message(
-                    self.tournament_manager.update_tournament(tournament))
-
-            else:
-                self.view.display_message(
-                    self.tournament_manager.update_tournament(tournament))
+            self.manage_update_round(tournament, rounds)
 
             self.view.display_message(
                 f"Round {tournament.current_round - 1} is finished"
@@ -224,6 +208,34 @@ class ControlTournament:
                 f"{tournament.current_round}\n"
             )
             return True
+
+    def paused_tournament(self, tournament: TournamentModel,
+                          rounds: RoundModels):
+        """Manage the tournament when it is paused."""
+        tournament.paused()
+        tournament.rounds.append(rounds)
+        self.update(tournament)
+
+    def manage_update_round(self, tournament: TournamentModel,
+                            rounds: RoundModels):
+        """Manage the update of the round."""
+
+        existing_round = next((r for r in
+                               tournament.rounds
+                               if r.name == rounds.name), None)
+        if existing_round:
+            if [r for r in tournament.rounds if r.name != rounds.name]:
+                tournament.rounds.remove(existing_round)
+
+        tournament.rounds.append(rounds)
+
+        self.update(tournament)
+
+    def update(self, tournament: TournamentModel):
+        """Update the tournament."""
+        self.view.display_message(
+            f"Update of the tournament: {tournament.name}"
+            f"{self.tournament_manager.update_tournament(tournament)}")
 
     def create_round(self,
                      tournament: TournamentModel) -> RoundModels:
@@ -259,18 +271,18 @@ class ControlTournament:
             # Reset the scores
             pairing.player1_score.score = 0.0
             pairing.player2_score.score = 0.0
-
             if result == "1":
-                pairing.player1_score.score += 1.0
+
                 self.round_view.display_match_result(
-                    pairing.player2_score.player.full_name
+                    pairing.player1_score.player.full_name
                     )
+                pairing.player1_score.score += 1.0
 
             elif result == "2":
-                pairing.player2_score.score += 1.0
                 self.round_view.display_match_result(
                     pairing.player2_score.player.full_name
                     )
+                pairing.player2_score.score += 1.0
 
             elif result == "0":
                 self.round_view.display_match_result(None, is_draw=True)
@@ -307,10 +319,12 @@ class DisplayRepport:
             except ValueError as e:
                 self.view.display_message(f"{e}")
                 continue
+
         self.repport(tournament)
 
     def repport(self, tournament: TournamentModel):
         """Fonction to report a tournament"""
+        self.view.clear_screen()
         self.tournament_player.update_player_scores(tournament)
         player = sorted(tournament.players,
                         key=lambda

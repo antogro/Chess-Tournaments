@@ -44,4 +44,4 @@ class RoundView:
         if is_draw:
             print("\n --- Round is draw --- \n")
         else:
-            f"\n ---- Winner -> {winner_name} win ---- \n"
+            print(f"\n ---- Winner -> {winner_name} <- ---- \n")
