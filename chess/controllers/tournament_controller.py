@@ -186,6 +186,8 @@ class ControlTournament:
                 "Tournament has reached the maximum number of rounds"
             )
             tournament.finished()
+            print('\ntournament: ', tournament)
+            print('\ntournament: ', tournament.rounds)
             tournament.end_date = datetime.now().strftime(
                 "%d-%m-%Y %H:%M:%S")
             self.manage_update_round(tournament, rounds)
@@ -214,12 +216,13 @@ class ControlTournament:
         tournament.rounds.append(rounds)
         self.update(tournament)
 
-    def manage_update_round(self, tournament: TournamentModel,
+    def manage_update_round(self,
+                            tournament: TournamentModel,
                             rounds: RoundModels):
         """Manage the update of the round."""
 
-        existing_round = next((r for r in
-                               tournament.rounds
+        existing_round = next((r for r
+                               in tournament.rounds
                                if r.name == rounds.name), None)
         if existing_round:
             if [r for r in tournament.rounds if r.name != rounds.name]:
@@ -313,6 +316,7 @@ class DisplayRepport:
             id = self.view.display_input("Right the number of the id: ")
             try:
                 tournament = self.tournament_manager.load_tournament(int(id))
+
                 break
             except ValueError as e:
                 self.view.display_message(f"{e}")
