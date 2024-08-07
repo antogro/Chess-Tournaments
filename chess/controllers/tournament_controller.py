@@ -186,8 +186,6 @@ class ControlTournament:
                 "Tournament has reached the maximum number of rounds"
             )
             tournament.finished()
-            print('\ntournament: ', tournament)
-            print('\ntournament: ', tournament.rounds)
             tournament.end_date = datetime.now().strftime(
                 "%d-%m-%Y %H:%M:%S")
             self.manage_update_round(tournament, rounds)
