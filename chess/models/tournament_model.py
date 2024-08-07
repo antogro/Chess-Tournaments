@@ -163,7 +163,7 @@ class TournamentManager:
         """Load all the tournament from the database"""
         return self.table.load_all()
 
-    def update(self, data, id) -> int:
+    def update(self, data: dict, id: int) -> int:
         """Update the tournament in the database"""
         return self.table.update(data, id)
 
@@ -301,12 +301,3 @@ class Match:
             start_date=start_date,
             end_date=end_date,
         )
-
-    def format_data(self, data: "Match"):
-        """Format data for a match"""
-        return [
-            [data.player1_score.player, data.player1_score.score],
-            [data.player2_score.player, data.player2_score.score],
-            data.start_date,
-            data.end_date,
-        ]

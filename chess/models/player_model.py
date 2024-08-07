@@ -24,12 +24,12 @@ class Player:
         self.score = score
 
     @property
-    def full_name(self):
+    def full_name(self) -> str:
         """Returne the full name of a player"""
         return f"{self.last_name} {self.first_name}"
 
     @property
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         """convert a Player object to a dictionary"""
         return {
             "first_name": self.first_name,
@@ -41,7 +41,7 @@ class Player:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]):
+    def from_dict(cls, data: dict[str, Any]) -> "Player":
         """convert a dictionary to a Player object"""
         return cls(**data)
 

@@ -22,18 +22,32 @@ class TournamentControl:
         self.control_tournament = ControlTournament()
 
     def manage_tournament(self):
+        """manage the tournament"""
         while True:
             choice = self.tournament_view.display_tournament_menu()
-            actions = {
-                "1": self.control_tournament.create_tournament(),
-                "2": self.control_tournament.continue_last_tournament(),
-                "3": self.control_tournament.select_and_continue_tournament(),
-                "4": self.display_repport.select_and_report_tournament(),
-                "5": self.control_tournament.display_all_tournaments(),
-                "Q": lambda: None,  # exit
-            }
-            if choice in actions:
-                actions[choice]()
+            if choice == "1":
+
+                self.control_tournament.create_tournament()
+
+            elif choice == "2":
+
+                self.control_tournament.continue_last_tournament()
+
+            elif choice == "3":
+                self.control_tournament.select_and_continue_tournament()
+
+            elif choice == "4":
+                """select and repport a tournament"""
+                self.display_repport.select_and_report_tournament()
+                break
+
+            elif choice == "5":
+                """show list of tournament"""
+                self.control_tournament.display_all_tournaments()
+                break
+
+            elif choice == "Q" or choice == "q":
+                """exit"""
                 break
 
 
@@ -53,11 +67,6 @@ class ControlTournament:
     def create_tournament(self):
         """
         Create a tournament with the given players.
-
-        Args: name (str): Name of the tournament players (List[Player]):
-        List of players
-
-        Returns: TournamentModel: Created tournament
         """
 
         tournament_data = self.tournament_view.get_tournament_data()
@@ -171,7 +180,6 @@ class ControlTournament:
         tournament.paused()
         if tournament.rounds:
             tournament.rounds.append(rounds)
-        print('tournament: ', tournament.to_dict)
         self.view.display_message(
             self.tournament_manager.update_tournament(tournament))
 
@@ -305,10 +313,13 @@ class DisplayRepport:
         """Fonction to report a tournament"""
         self.tournament_player.update_player_scores(tournament)
         player = sorted(tournament.players,
-                        key=lambda x: x.score,
+                        key=lambda
+                        x: x.score,
                         reverse=True)
+
         self.view.display_table(
-            "Tournament: ", [tournament.to_dict],
+            "Tournament: ",
+            [tournament.to_dict],
             exclude_headers=["rounds", "players"]
         )
         for rounds in tournament.rounds:
@@ -317,7 +328,8 @@ class DisplayRepport:
 
     def display_tournament_info(self, tournament: TournamentModel):
         self.view.display_table(
-            "Tournament: ", [tournament.to_dict],
+            "Tournament: ",
+            [tournament.to_dict],
             exclude_headers=["rounds", "players"]
         )
         self.view.display_table(
