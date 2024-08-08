@@ -146,14 +146,13 @@ class TournamentManager:
 
     table: TableManager = db_tournament
 
-    def id_tournament(self, tournament: TournamentModel) -> TournamentModel:
+    def id_tournament(self, tournament: TournamentModel):
         """Get and set the id of the tournament"""
         all_tournament = self.table.load_all()
         self.doc_id = (
             max([doc.doc_id for doc in all_tournament])
             if all_tournament else 0) + 1
         tournament.doc_id = self.doc_id
-        return tournament
 
     def save(self, tournament: TournamentModel) -> int:
         """Save the tournament in the database"""
@@ -213,20 +212,21 @@ class TournamentPlayer:
         """Convert a dictionary to a TournamentPlayer object"""
         return cls(data[0])
 
+    @classmethod
     def add_player(
-        self,
-        players_number,
+        cls,
+        players_ids: str,
         tournament: TournamentModel
-    ) -> TournamentModel:
+    ):
         """Add and set player object to the tournament"""
-        new_players = [int(s) for s in players_number.split()]
+        new_players = [int(s) for s in players_ids.split()]
         for new_player in new_players:
-            self.player_data = Player.get_player(id=int(new_player))
-            if self.player_data:
-                tournament.players.append(self.player_data)
-        return tournament
+            cls.player_data = Player.get_player(id=int(new_player))
+            if cls.player_data:
+                tournament.players.append(cls.player_data)
 
-    def update_player_scores(self, tournament: TournamentModel):
+    @classmethod
+    def update_player_scores(cls, tournament: TournamentModel):
         # Reset all scores to 0
         for player in tournament.players:
             player.score = 0

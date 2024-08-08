@@ -13,42 +13,8 @@ from ..models.tournament_model import (
 )
 
 
-class TournamentControl:
+class TournamentController:
     """fonction to control the tournament"""
-
-    def __init__(self):
-        self.tournament_view = TournamentsView()
-        self.display_repport = DisplayRepport()
-        self.control_tournament = ControlTournament()
-
-    def manage_tournament(self):
-        """manage the tournament"""
-        while True:
-            choice = self.tournament_view.display_tournament_menu()
-            if choice == "1":
-                self.control_tournament.create_tournament()
-
-            elif choice == "2":
-                self.control_tournament.continue_last_tournament()
-
-            elif choice == "3":
-                self.control_tournament.select_and_continue_tournament()
-
-            elif choice == "4":
-                self.display_repport.select_and_report_tournament()
-                break
-
-            elif choice == "5":
-                self.control_tournament.display_all_tournaments()
-                break
-
-            elif choice.upper() == "Q":
-                """exit"""
-                break
-
-
-class ControlTournament:
-    """manage the tournament"""
 
     def __init__(self):
         self.tournament_view = TournamentsView()
@@ -56,9 +22,31 @@ class ControlTournament:
         self.round_view = RoundView()
         self.view = Display()
         self.display_repport = DisplayRepport()
-        self.tournament_player = TournamentPlayer(self)
 
-        pass
+    def manage_tournament(self):
+        """manage the tournament"""
+        while True:
+            choice = self.tournament_view.display_tournament_menu()
+            if choice == "1":
+                self.create_tournament()
+
+            elif choice == "2":
+                self.continue_last_tournament()
+
+            elif choice == "3":
+                self.select_and_continue_tournament()
+
+            elif choice == "4":
+                self.display_repport.select_and_report_tournament()
+                break
+
+            elif choice == "5":
+                self.display_all_tournaments()
+                break
+
+            elif choice.upper() == "Q":
+                """exit"""
+                break
 
     def create_tournament(self):
         """
@@ -67,15 +55,14 @@ class ControlTournament:
 
         tournament_data = self.tournament_view.get_tournament_data()
         tournament = TournamentModel(**tournament_data)
-        tournament = self.tournament_manager.id_tournament(tournament)
+        self.tournament_manager.id_tournament(tournament)
 
         self.view.display_table("Player list",
                                 [player for player in Player.all()],
                                 exclude_headers=["birth_date", "score"])
         players_ids = self.tournament_view.tournament_choose_player()
 
-        tournament = self.tournament_player.add_player(players_ids,
-                                                       tournament)
+        TournamentPlayer.add_player(players_ids, tournament)
         self.tournament_manager.save(tournament)
         self.display_repport.display_tournament_info(tournament)
         self.manage_current_round(tournament)
@@ -156,7 +143,7 @@ class ControlTournament:
                     if tournament.current_round == 1:
                         rd.shuffle(tournament.players)
                     else:
-                        self.tournament_player.update_player_scores(tournament)
+                        TournamentPlayer.update_player_scores(tournament)
                         players = tournament.players
                         players.sort(key=lambda x: (x.score), reverse=True)
 
@@ -307,7 +294,6 @@ class DisplayRepport:
     def __init__(self):
         self.view = Display()
         self.tournament_manager = TournamentManager()
-        self.tournament_player = TournamentPlayer(self)
 
     def select_and_report_tournament(self, repport=None):
         """Select a tournament and report it"""
@@ -333,7 +319,7 @@ class DisplayRepport:
     def repport(self, tournament: TournamentModel):
         """Fonction to report a tournament"""
         self.view.clear_screen()
-        self.tournament_player.update_player_scores(tournament)
+        TournamentPlayer.update_player_scores(tournament)
         player = sorted(tournament.players,
                         key=lambda
                         x: x.score,

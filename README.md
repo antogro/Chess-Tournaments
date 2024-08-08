@@ -79,6 +79,15 @@ python main.py
 Voilà votre programme est maintenant opérationnel, vous n'avez plus qu'à suivre les consignes.
 
 
+## Lancer un Rapport Flake8
+Pour lancer un rapport flake8, placez-vous dans le dossier Chess-Tournaments du terminal
+puis taper la commande suivante:
+```bash
+flake8 --format=html --htmldir=flake-report
+```
+        
+
+
 ## Exemple d'utilisation
 
 Pour lancer l'application, il vous faut taper la commande suivante:

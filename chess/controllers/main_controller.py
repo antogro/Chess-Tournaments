@@ -1,5 +1,5 @@
 from ..views.menu_view import MenuView
-from ..controllers.tournament_controller import TournamentControl
+from ..controllers.tournament_controller import TournamentController
 from ..controllers.player_controller import MainPlayerControl
 from ..views.base_views import Display
 
@@ -10,7 +10,7 @@ class MainController:
     def __init__(self):
         self.menu_view = MenuView()
         self.player_controller = MainPlayerControl()
-        self.tournament_controller = TournamentControl()
+        self.tournament_menu = TournamentController()
         self.view = Display()
 
     def run(self):
@@ -20,7 +20,7 @@ class MainController:
             choice = self.menu_view.application_menu()
 
             if choice == "1":
-                self.tournament_controller.manage_tournament()
+                self.tournament_menu.manage_tournament()
 
             elif choice == "2":
                 self.player_controller.manage_player()
