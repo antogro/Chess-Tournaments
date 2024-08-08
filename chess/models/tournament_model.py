@@ -200,6 +200,9 @@ class TournamentPlayer:
     player: Player
     score: float = 0
 
+    def __str__(self) -> str:
+        return f"{self.player.first_name} {self.player.last_name}"
+
     @property
     def to_dict(self) -> Any:
         """Convert the TournamentPlayer object to a dictionary"""
@@ -210,11 +213,10 @@ class TournamentPlayer:
         """Convert a dictionary to a TournamentPlayer object"""
         return cls(data[0])
 
-    def __str__(self) -> str:
-        return f"{self.player.first_name} {self.player.last_name}"
-
     def add_player(
-        self, players_number, tournament: TournamentModel
+        self,
+        players_number,
+        tournament: TournamentModel
     ) -> TournamentModel:
         """Add and set player object to the tournament"""
         new_players = [int(s) for s in players_number.split()]

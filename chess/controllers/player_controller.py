@@ -22,8 +22,7 @@ class MainPlayerControl:
             elif choice == "2":
                 self.player_control.display_player_list()
 
-            elif choice == "Q" or choice == "q":
-
+            elif choice.upper() == "Q":
                 break
 
             else:

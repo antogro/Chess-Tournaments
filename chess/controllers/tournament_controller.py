@@ -26,27 +26,23 @@ class TournamentControl:
         while True:
             choice = self.tournament_view.display_tournament_menu()
             if choice == "1":
-
                 self.control_tournament.create_tournament()
 
             elif choice == "2":
-
                 self.control_tournament.continue_last_tournament()
 
             elif choice == "3":
                 self.control_tournament.select_and_continue_tournament()
 
             elif choice == "4":
-                """select and repport a tournament"""
                 self.display_repport.select_and_report_tournament()
                 break
 
             elif choice == "5":
-                """show list of tournament"""
                 self.control_tournament.display_all_tournaments()
                 break
 
-            elif choice == "Q" or choice == "q":
+            elif choice.upper() == "Q":
                 """exit"""
                 break
 
@@ -78,7 +74,8 @@ class ControlTournament:
                                 exclude_headers=["birth_date", "score"])
         players_ids = self.tournament_view.tournament_choose_player()
 
-        tournament = self.tournament_player.add_player(players_ids, tournament)
+        tournament = self.tournament_player.add_player(players_ids,
+                                                       tournament)
         self.tournament_manager.save(tournament)
         self.display_repport.display_tournament_info(tournament)
         self.manage_current_round(tournament)
@@ -86,11 +83,14 @@ class ControlTournament:
     def display_all_tournaments(self):
         """Display all tournament from the data base"""
         tournaments = self.tournament_manager.load_all_tournament()
-        self.view.display_table(
-            "Tournament",
-            [tournament for tournament in tournaments],
-            exclude_headers=["rounds", "players"],
-        )
+        if tournaments:
+            self.view.display_table(
+                "Tournament",
+                [tournament for tournament in tournaments],
+                exclude_headers=["rounds", "players"],
+            )
+        else:
+            self.view.display_message("No tournaments found!")
 
     def continue_last_tournament(self):
         """Continue the last tournament from the database"""
@@ -139,8 +139,7 @@ class ControlTournament:
                 choice = self.round_view.manage_round_view()
                 if choice != "1":
                     tournament.paused()
-                    self.view.display_message(
-                        self.tournament_manager.update_tournament(tournament))
+                    self.update(tournament)
                     break
 
                 tournament.resume()
@@ -168,7 +167,6 @@ class ControlTournament:
                 round_choice = self.manage_score(rounds)
 
                 if "Paused" == round_choice.status:
-
                     self.paused_tournament(tournament, rounds)
 
                     break
@@ -182,12 +180,11 @@ class ControlTournament:
                                  rounds: RoundModels) -> bool:
         """Manage the update of the tournament after a round."""
         if tournament.current_round > int(tournament.number_of_round):
+            tournament.current_round -= 1
             self.view.display_message(
                 "Tournament has reached the maximum number of rounds"
             )
             tournament.finished()
-            print('\ntournament: ', tournament)
-            print('\ntournament: ', tournament.rounds)
             tournament.end_date = datetime.now().strftime(
                 "%d-%m-%Y %H:%M:%S")
             self.manage_update_round(tournament, rounds)
@@ -220,15 +217,21 @@ class ControlTournament:
                             tournament: TournamentModel,
                             rounds: RoundModels):
         """Manage the update of the round."""
-
         existing_round = next((r for r
                                in tournament.rounds
                                if r.name == rounds.name), None)
         if existing_round:
-            if [r for r in tournament.rounds if r.name != rounds.name]:
-                tournament.rounds.remove(existing_round)
+            # Update the existing round
+            existing_round.matches = rounds.matches
+            existing_round.start_date = rounds.start_date
+            existing_round.end_date = rounds.end_date
+            existing_round.status = rounds.status
 
-        tournament.rounds.append(rounds)
+            tournament.rounds = [r if r.name != rounds.name
+                                 else existing_round
+                                 for r in tournament.rounds]
+        else:
+            tournament.rounds.append(rounds)
 
         self.update(tournament)
 
@@ -252,7 +255,6 @@ class ControlTournament:
                 player1_score=TournamentPlayer(player_1),
                 player2_score=TournamentPlayer(player_2),
             )
-
             matches.append(match)
 
         rounds = RoundModels(matches=matches, start_date=start_date, name=name)
@@ -260,6 +262,10 @@ class ControlTournament:
 
     def manage_score(self, round: RoundModels) -> RoundModels:
         """Add score to players"""
+        WIN_PLAYER_1 = "1"
+        WIN_PLAYER_2 = "2"
+        WIN_DRAW = "0"
+
         choice = self.round_view.get_round_choice()
 
         if choice != "1":
@@ -272,20 +278,20 @@ class ControlTournament:
             # Reset the scores
             pairing.player1_score.score = 0.0
             pairing.player2_score.score = 0.0
-            if result == "1":
 
+            if result == WIN_PLAYER_1:
+                pairing.player1_score.score += 1.0
                 self.round_view.display_match_result(
                     pairing.player1_score.player.full_name
                     )
-                pairing.player1_score.score += 1.0
 
-            elif result == "2":
+            elif result == WIN_PLAYER_2:
+                pairing.player2_score.score += 1.0
                 self.round_view.display_match_result(
                     pairing.player2_score.player.full_name
                     )
-                pairing.player2_score.score += 1.0
 
-            elif result == "0":
+            elif result == WIN_DRAW:
                 self.round_view.display_match_result(None, is_draw=True)
                 pairing.player1_score.score = 0.5
                 pairing.player2_score.score += 0.5

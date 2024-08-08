@@ -9,7 +9,7 @@ class Display:
         self.console = Console()
 
     def clear_screen(self):
-        """Reset l'affichage"""
+        """Reset console"""
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def display_table(
@@ -49,7 +49,7 @@ class Display:
         print("")
         self.console.print(table)
 
-    def display_input(self, message):
+    def display_input(self, message: str):
         """display input message"""
         print(f"\n{message}")
         return input("Do your choice: ")
@@ -60,10 +60,10 @@ class Display:
         print("Error: Invalid input")
         print("\n")
 
-    def display_error_message(self, message):
+    def display_error_message(self, message: str):
         print(f"Error : {message}")
 
-    def display_message(self, message):
+    def display_message(self, message: str):
         print(f"\n{message}")
 
     def display_player(self, players: list, exclude_headers=None):
@@ -96,14 +96,14 @@ class Display:
 
             matches.append(
                 {
-                    "Matche": str(index + 1),
+                    "Match": str(index + 1),
                     "Player 1": match.player1_score.player.full_name,
                     "Player 1 score": match.player1_score.score,
                     "Player 2": match.player2_score.player.full_name,
                     "Player 2 score": match.player2_score.score,
                 }
             )
-        headers = ["Matche",
+        headers = ["Match",
                    "Player 1",
                    "Player 1 score",
                    "Player 2",
@@ -121,12 +121,12 @@ class Display:
 
             matches.append(
                 {
-                    "Matche": str(index + 1),
+                    "Match": str(index + 1),
                     "Player 1": match.player1_score.player.full_name,
                     "Player 2": match.player2_score.player.full_name,
                 }
             )
-        headers = ["Matche", "Player 1", "Player 2"]
+        headers = ["Match", "Player 1", "Player 2"]
         self.display_table(
             title,
             [match for match in matches],

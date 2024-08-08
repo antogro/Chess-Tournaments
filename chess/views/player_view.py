@@ -12,7 +12,7 @@ class PlayerView:
         return input("Right your choose number: ")
 
     def chess_id_construc(self):
-        """construc the chess id code"""
+        """construc the chess id input"""
 
         while True:
             chess_id = input("Right your chess id: ")
@@ -39,9 +39,9 @@ class PlayerView:
             return f"{chess_id_letter.upper()}{chess_id_number}"
 
     def birth_date_contruc(self):
-        """construc the birth date code"""
+        """construc the birth date input"""
         while True:
-            birth_date = input("Birth date (MM/DD/YYYY): ")
+            birth_date = input("Birth date (DD/MM/YYYY): ")
             try:
                 datetime.strptime(birth_date, "%d/%m/%Y")
                 return birth_date

@@ -4,6 +4,7 @@ from .._database._database import db_player
 
 
 class Player:
+    """Class to manage player"""
 
     table: TableManager = db_player
 

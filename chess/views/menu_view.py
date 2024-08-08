@@ -1,5 +1,5 @@
 class MenuView:
-    """Main mase menu"""
+    """Main menu"""
 
     def application_menu(self):
         """Display main menu"""
