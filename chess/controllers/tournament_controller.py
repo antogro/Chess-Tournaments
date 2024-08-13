@@ -125,7 +125,6 @@ class TournamentController:
                 break
             else:
                 choice = self.round_view.manage_round_view()
-                print(f"==>> choice: {choice}")
                 if choice != "1":
                     tournament.paused()
                     self.update(tournament)
