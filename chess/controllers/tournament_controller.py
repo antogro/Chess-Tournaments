@@ -121,10 +121,11 @@ class TournamentController:
                 self.view.display_message(
                     "--- The tournament is already end! ---\n"
                     )
-                tournament.finished()
+
                 break
             else:
                 choice = self.round_view.manage_round_view()
+                print(f"==>> choice: {choice}")
                 if choice != "1":
                     tournament.paused()
                     self.update(tournament)
@@ -257,6 +258,7 @@ class TournamentController:
 
         if choice != "1":
             round.status = "Paused"
+            return round
 
         for pairing in round.matches:
             result = self.round_view.get_match_result(pairing, round.name)
