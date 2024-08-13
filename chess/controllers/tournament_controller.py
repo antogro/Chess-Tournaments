@@ -117,10 +117,11 @@ class TournamentController:
 
         round_continue = True
         while round_continue:
-            if tournament.current_round > int(tournament.number_of_round):
+            if tournament.status == "Finished":
                 self.view.display_message(
                     "--- The tournament is already end! ---\n"
                     )
+                tournament.finished()
                 break
             else:
                 choice = self.round_view.manage_round_view()
@@ -166,7 +167,7 @@ class TournamentController:
     def manage_update_tournament(self, tournament: TournamentModel,
                                  rounds: RoundModels) -> bool:
         """Manage the update of the tournament after a round."""
-        if tournament.current_round > int(tournament.number_of_round):
+        if tournament.current_round >= int(tournament.number_of_round + 1):
             tournament.current_round -= 1
             self.view.display_message(
                 "Tournament has reached the maximum number of rounds"
@@ -208,7 +209,6 @@ class TournamentController:
                                in tournament.rounds
                                if r.name == rounds.name), None)
         if existing_round:
-            # Update the existing round
             existing_round.matches = rounds.matches
             existing_round.start_date = rounds.start_date
             existing_round.end_date = rounds.end_date
@@ -257,12 +257,10 @@ class TournamentController:
 
         if choice != "1":
             round.status = "Paused"
-            return round
 
         for pairing in round.matches:
             result = self.round_view.get_match_result(pairing, round.name)
 
-            # Reset the scores
             pairing.player1_score.score = 0.0
             pairing.player2_score.score = 0.0
 
@@ -280,7 +278,7 @@ class TournamentController:
 
             elif result == WIN_DRAW:
                 self.round_view.display_match_result(None, is_draw=True)
-                pairing.player1_score.score = 0.5
+                pairing.player1_score.score += 0.5
                 pairing.player2_score.score += 0.5
 
             round.end_date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
@@ -308,7 +306,6 @@ class DisplayRepport:
             id = self.view.display_input("Right the number of the id: ")
             try:
                 tournament = self.tournament_manager.load_tournament(int(id))
-
                 break
             except ValueError as e:
                 self.view.display_message(f"{e}")

@@ -15,12 +15,6 @@ class RoundView:
         print("2. if you want to paused the round.")
         return input("\n Do your choice: ")
 
-    def display_pairing(self, pairings):
-        """Display pairing while the match is start"""
-        print(f"\n --- Player 1: {pairings.player.full_name} --- ")
-        print("VS")
-        print(f"--- Player 2: {pairings.player.full_name} --- \n")
-
     def get_match_result(self, pairing, name):
         """Get the result of one match between 2 players"""
         print(f"\n -- {name}: Player 1: "

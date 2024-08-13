@@ -15,7 +15,7 @@ class PlayerView:
         """construc the chess id input"""
 
         while True:
-            chess_id = input("Right your chess id: ")
+            chess_id = input("Right your chess id: (format: XX12345) ")
 
             if not chess_id:
                 print("N/A")

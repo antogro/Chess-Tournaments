@@ -45,7 +45,7 @@ class PlayersControl(Player):
 
         new_player.save()
         self.display.display_table("New player created: ",
-                                   [new_player.to_dict])
+                                   [new_player.to_dict], exclude_headers=["score"])
         self.player_view.display_new_player(new_player)
 
     def display_player_list(self):

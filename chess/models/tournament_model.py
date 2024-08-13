@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
 import builtins
+from dataclasses import dataclass, field
 from typing import Any, Optional
 from chess.models.player_model import Player
 from .table_manager import TableManager
@@ -43,7 +43,7 @@ class RoundModels:
 
 
 @dataclass
-class TournamentModel(Player):
+class TournamentModel:
     """Class to manage the tournament"""
 
     name: str
@@ -56,7 +56,7 @@ class TournamentModel(Player):
     doc_id: Optional[int] = None
     end_date: Optional[str] = None
     rounds: list[RoundModels] = field(default_factory=list)
-    _players: list["Player"] = field(default_factory=list)
+    _players: list[Player] = field(default_factory=list)
 
     @property
     def to_dict(self) -> dict[str, Any]:
@@ -227,7 +227,7 @@ class TournamentPlayer:
 
     @classmethod
     def update_player_scores(cls, tournament: TournamentModel):
-        # Reset all scores to 0
+        """Update player score from rounds object to players"""
         for player in tournament.players:
             player.score = 0
 

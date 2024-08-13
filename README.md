@@ -3,8 +3,7 @@ Creation of a software for counting points and round results for a chess tournam
 
 
 ## Description
-L'application de gestion de tournoi d'échec "Chess-Tournaments" permet au organisateur de pouvoir ajouter des joueurs dans une base de donné, puis la possiblité de créer des tournois ou les pairs seront assemblés pour les différents rounds et trié en fonction de leurs scores et ainsi avoir des adversaires adapté à leur niveau. Les tournois peuvent être mise sur pause, permettant le gestion de plusieur tournois en simultané.
-Il est également possible de réaliser un rapport du tournoi sèlectionné, ou tout les rounds et les adversaire seront affiché, mais également la liste des joueurs rangé dans l'ordre des vainqueurs.
+L'application de gestion de tournoi d'échec "Chess-Tournaments" est une application complète et flexible de gestion de tournois d'échecs. Elle permet aux organisateurs d'ajouter des joueurs à une base de données, de créer et gérer plusieurs tournois simultanément, avec la possibilité de les mettre en pause. L'application génère automatiquement les appariements pour chaque rounds, en classant les joueurs selon leurs scores pour des matchs équilibrés. Les tournois peuvent être suivis en temps réel avec des mises à jour des scores après chaque rounds. Une fonction de rapport permet de générer un résumé détaillé du tournoi, affichant tous les tours avec leurs appariements ainsi que le classement final des joueurs. De plus, l'application offre la possibilité d'extraire la liste des joueurs inscrits, classée par ordre alphabétique.
 
 
 ## Installation
